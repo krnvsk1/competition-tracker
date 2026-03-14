@@ -10,7 +10,7 @@ RUN npm install
 COPY . .
 
 # Generate Prisma client and build
-RUN npx prisma generate
+# RUN npx prisma generate
 RUN npm run build
 
 # Initialize database
