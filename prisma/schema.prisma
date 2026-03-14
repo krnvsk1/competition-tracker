@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Competition {
+  id        String   @id @default(cuid())
+  name      String
+  date      DateTime
+  location  String   @default("")
+  notes     String   @default("")
+  isArchived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teams     Team[]
+}
+
+model Team {
+  id               String      @id @default(cuid())
+  name             String
+  contactName      String      @default("")
+  phoneNumber      String      @default("")
+  participantCount Int         @default(1)
+  mealPaid         Boolean     @default(false)
+  hasTelegram      Boolean     @default(false)
+  hasMaxMessenger  Boolean     @default(false)
+  notes            String      @default("")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  competition      Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competitionId    String
+}
+
