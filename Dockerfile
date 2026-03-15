@@ -1,13 +1,13 @@
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Dependencies (includes devDependencies for build)
 # ============================================
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies needed for build)
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # ============================================
 # Stage 2: Builder
@@ -35,6 +35,9 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
@@ -52,14 +55,20 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+
+# Copy Prisma client and CLI (needed at runtime)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+
+# Create startup script
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'npx prisma db push --skip-generate' >> /app/start.sh && \
+    echo 'exec node server.js' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Set database URL
 ENV DATABASE_URL="file:/app/data/db.sqlite"
-
-# Initialize database on container start
-RUN npx prisma db push --skip-generate
 
 # Set proper ownership
 RUN chown -R nextjs:nodejs /app
@@ -71,8 +80,8 @@ USER nextjs
 EXPOSE 3000
 
 # Health check for Timeweb Cloud
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
-# Start application
-CMD ["node", "server.js"]
+# Start application with database initialization
+CMD ["/app/start.sh"]
