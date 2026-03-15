@@ -982,7 +982,7 @@ export default function CompetitionTracker() {
             <Button variant="outline" onClick={() => { setShowAddCompetition(false); resetCompForm(); }}>
               Отмена
             </Button>
-            <Button onClick={createCompetition}>Создать</Button>
+            <Button type="button" onClick={createCompetition}>Создать</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
