@@ -1,23 +1,78 @@
-FROM node:20-alpine
-
+# ============================================
+# Stage 1: Dependencies
+# ============================================
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
 
-# Copy source
+# ============================================
+# Stage 2: Builder
+# ============================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client and build
-# RUN npx prisma generate
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="file:./data/db.sqlite"
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build application
 RUN npm run build
 
-# Initialize database
-RUN mkdir -p /app/data
-ENV DATABASE_URL=file:/app/data/db.sqlite
-RUN npx prisma db push
+# ============================================
+# Stage 3: Runner (Production)
+# ============================================
+FROM node:20-alpine AS runner
+WORKDIR /app
 
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Create data directory for SQLite database
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Set database URL
+ENV DATABASE_URL="file:/app/data/db.sqlite"
+
+# Initialize database on container start
+RUN npx prisma db push --skip-generate
+
+# Set proper ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
 EXPOSE 3000
 
-CMD ["npm", "start"]
+# Health check for Timeweb Cloud
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+
+# Start application
+CMD ["node", "server.js"]
