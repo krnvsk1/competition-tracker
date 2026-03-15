@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+export const dynamic = 'force-dynamic'
 
 // GET /api/competitions/[id] - получить соревнование по ID
 export async function GET(
