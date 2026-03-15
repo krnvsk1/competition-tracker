@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "node -e \"require('fs').existsSync('./data')||require('fs').mkdirSync('./data',{recursive:true})\" && npx prisma db push --skip-generate && next start"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
