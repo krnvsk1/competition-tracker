@@ -88,6 +88,9 @@ export default function CompetitionTracker() {
   const [showAddTeam, setShowAddTeam] = useState(false)
   const [showEditTeam, setShowEditTeam] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showPinDialog, setShowPinDialog] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'competition' | 'team', id: string } | null>(null)
 
   // Форма соревнования
@@ -159,14 +162,22 @@ export default function CompetitionTracker() {
     if (saved === '7777') setIsEditor(true)
   }, [])
 
-  const loginAsEditor = () => {
-    const pin = prompt('Введите PIN для режима редактирования:')
-    if (pin === '7777') {
-      localStorage.setItem('ct_editor_pin', pin)
+  const openPinDialog = () => {
+    setPinInput('')
+    setPinError(false)
+    setShowPinDialog(true)
+  }
+
+  const submitPin = () => {
+    if (pinInput === '7777') {
+      localStorage.setItem('ct_editor_pin', pinInput)
       setIsEditor(true)
+      setShowPinDialog(false)
+      setPinInput('')
       toast.success('Режим редактирования включён')
-    } else if (pin !== null) {
-      toast.error('Неверный PIN')
+    } else {
+      setPinError(true)
+      setPinInput('')
     }
   }
 
@@ -928,7 +939,39 @@ export default function CompetitionTracker() {
           </DialogContent>
         </Dialog>
 
-        {/* Диалог подтверждения удаления */}
+        {/* PIN диалог */}
+        <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
+          <DialogContent className="sm:max-w-xs">
+            <DialogHeader>
+              <DialogTitle>Режим редактирования</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Введите PIN-код</Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(false) }}
+                  onKeyDown={e => e.key === 'Enter' && submitPin()}
+                  placeholder="••••"
+                  className={`text-center text-2xl tracking-[0.5em] ${pinError ? 'border-red-500 ring-red-500' : ''}`}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-sm text-red-500 text-center">Неверный PIN-код</p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPinDialog(false)}>Отмена</Button>
+              <Button onClick={submitPin}>Войти</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Удаление */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -989,7 +1032,7 @@ export default function CompetitionTracker() {
               className="hidden"
               onChange={importData}
             />
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -998,11 +1041,11 @@ export default function CompetitionTracker() {
                 {showArchived ? 'Активные' : 'Архив'}
               </Button>
               {isEditor ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-700 h-8 px-2.5 flex items-center cursor-pointer" onClick={() => { localStorage.removeItem('ct_editor_pin'); setIsEditor(false); toast.success('Режим просмотра') }}>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 h-8 px-2.5 flex items-center cursor-pointer shrink-0" onClick={() => { localStorage.removeItem('ct_editor_pin'); setIsEditor(false); toast.success('Режим просмотра') }}>
                   ✏️ Редактор
                 </Badge>
               ) : (
-                <Button variant="outline" size="sm" onClick={loginAsEditor}>
+                <Button variant="outline" size="sm" onClick={openPinDialog}>
                   🔑 Войти
                 </Button>
               )}
