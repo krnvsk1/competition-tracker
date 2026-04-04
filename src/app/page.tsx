@@ -28,7 +28,9 @@ import {
   XCircle,
   MessageCircle,
   Utensils,
-  CircleDollarSign
+  CircleDollarSign,
+  Download,
+  Upload
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -73,6 +75,7 @@ export default function CompetitionTracker() {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Диалоги
   const [showAddCompetition, setShowAddCompetition] = useState(false)
@@ -145,6 +148,54 @@ export default function CompetitionTracker() {
   }, [loadCompetitions])
 
   // Сброс формы соревнования
+  // Экспорт данных
+  const exportData = async () => {
+    try {
+      const res = await fetch('/api/data')
+      if (!res.ok) throw new Error('Export failed')
+      const data = await res.json()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `competition-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Бэкап скачан')
+    } catch {
+      toast.error('Ошибка при скачивании бэкапа')
+    }
+  }
+
+  // Импорт данных
+  const importData = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      const res = await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        const result = await res.json()
+        toast.success(result.message || 'Данные восстановлены')
+        loadCompetitions()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Ошибка при импорте')
+      }
+    } catch {
+      toast.error('Неверный формат файла')
+    }
+
+    // Сбросить input чтобы можно было выбрать тот же файл
+    e.target.value = ''
+  }
+
   const resetCompForm = () => {
     setCompForm({
       name: '',
@@ -838,6 +889,29 @@ export default function CompetitionTracker() {
               </h1>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exportData}
+                title="Скачать бэкап"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                title="Восстановить из бэкапа"
+              >
+                <Upload className="h-4 w-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={importData}
+              />
               <Button
                 variant="outline"
                 size="sm"
