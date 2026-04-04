@@ -152,7 +152,7 @@ export default function CompetitionTracker() {
   // Экспорт данных
   const exportData = async () => {
     try {
-      const res = await fetch('/api/data')
+      const res = await fetch('/api/backup')
       if (!res.ok) throw new Error('Export failed')
       const data = await res.json()
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -178,7 +178,7 @@ export default function CompetitionTracker() {
     try {
       const text = await file.text()
       const data = JSON.parse(text)
-      const res = await fetch('/api/data', {
+      const res = await fetch('/api/backup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
