@@ -159,13 +159,7 @@ export default function CompetitionTracker() {
   // Проверка PIN для режима редактирования
   useEffect(() => {
     const saved = localStorage.getItem('ct_editor_pin')
-    if (saved === '7777') {
-      setIsEditor(true)
-    } else {
-      // Первый визит — показать выбор режима
-      const timer = setTimeout(() => setShowPinDialog(true), 300)
-      return () => clearTimeout(timer)
-    }
+    if (saved === '7777') setIsEditor(true)
   }, [])
 
   const openPinDialog = () => {
@@ -1054,6 +1048,25 @@ export default function CompetitionTracker() {
         </div>
       </div>
 
+      {/* Панель действий под шапкой */}
+      <div className="bg-white border-b sticky top-[57px] z-10">
+        <div className="max-w-2xl mx-auto px-4 py-2 flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowArchived(!showArchived)}
+          >
+            {showArchived ? 'Активные' : 'Архив'}
+          </Button>
+          {!showArchived && isEditor && (
+            <Button size="sm" onClick={() => setShowAddCompetition(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Добавить соревнование
+            </Button>
+          )}
+        </div>
+      </div>
+
       <div className="max-w-2xl mx-auto px-4 py-4">
         {loading ? (
           <div className="text-center py-12 text-gray-500">
@@ -1123,25 +1136,6 @@ export default function CompetitionTracker() {
                 </Card>
               )
             })}
-          </div>
-        )}
-
-        {/* Кнопки внизу */}
-        {!loading && (
-          <div className="flex gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowArchived(!showArchived)}
-            >
-              {showArchived ? 'Активные' : 'Архив'}
-            </Button>
-            {!showArchived && isEditor && (
-              <Button size="sm" onClick={() => setShowAddCompetition(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                Добавить соревнование
-              </Button>
-            )}
           </div>
         )}
       </div>
