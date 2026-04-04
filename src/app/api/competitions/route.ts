@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCompetitions, createCompetition } from '@/lib/storage'
+import { getCompetitions, createCompetition, seedIfEmpty } from '@/lib/storage'
 
 export const dynamic = 'force-dynamic'
 
 // GET /api/competitions - получить все соревнования
 export async function GET(request: NextRequest) {
   try {
+    seedIfEmpty()
+
     const { searchParams } = new URL(request.url)
     const archived = searchParams.get('archived') === 'true'
 
@@ -21,13 +23,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, date, mealCost, notes } = body
+    const { name, startDate, endDate, mealCost, notes } = body
 
-    if (!name || !date) {
-      return NextResponse.json({ error: 'Название и дата обязательны' }, { status: 400 })
+    if (!name || !startDate || !endDate) {
+      return NextResponse.json({ error: 'Название и период обязательны' }, { status: 400 })
     }
 
-    const competition = createCompetition({ name, date, mealCost, notes })
+    const competition = createCompetition({ name, startDate, endDate, mealCost, notes })
     return NextResponse.json(competition, { status: 201 })
   } catch (error) {
     console.error('Error creating competition:', error)

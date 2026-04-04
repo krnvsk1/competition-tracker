@@ -31,11 +31,12 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, date, mealCost, notes, isArchived } = body
+    const { name, startDate, endDate, mealCost, notes, isArchived } = body
 
     const competition = updateCompetition(id, {
       name,
-      date,
+      startDate,
+      endDate,
       mealCost,
       notes,
       isArchived
