@@ -53,7 +53,8 @@ interface Team {
 interface Competition {
   id: string
   name: string
-  date: string
+  startDate: string
+  endDate: string
   mealCost: number
   notes: string
   isArchived: boolean
@@ -84,7 +85,8 @@ export default function CompetitionTracker() {
   // Форма соревнования
   const [compForm, setCompForm] = useState({
     name: '',
-    date: new Date(),
+    startDate: new Date(),
+    endDate: new Date(),
     mealCost: 0,
     notes: ''
   })
@@ -146,7 +148,8 @@ export default function CompetitionTracker() {
   const resetCompForm = () => {
     setCompForm({
       name: '',
-      date: new Date(),
+      startDate: new Date(),
+      endDate: new Date(),
       mealCost: 0,
       notes: ''
     })
@@ -343,7 +346,8 @@ export default function CompetitionTracker() {
   const openEditCompetition = (competition: Competition) => {
     setCompForm({
       name: competition.name,
-      date: new Date(competition.date),
+      startDate: new Date(competition.startDate),
+      endDate: new Date(competition.endDate),
       mealCost: competition.mealCost,
       notes: competition.notes
     })
@@ -353,6 +357,12 @@ export default function CompetitionTracker() {
   // Форматирование даты
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'd MMMM yyyy', { locale: ru })
+  }
+
+  const formatPeriod = (start: string, end: string) => {
+    const s = format(new Date(start), 'd MMM', { locale: ru })
+    const e = format(new Date(end), 'd MMM yyyy', { locale: ru })
+    return `${s} — ${e}`
   }
 
   // Форматирование телефона
@@ -498,23 +508,41 @@ export default function CompetitionTracker() {
         </div>
 
         <div className="space-y-2">
-          <Label>Дата проведения</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                {format(compForm.date, 'd MMMM yyyy', { locale: ru })}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={compForm.date}
-                onSelect={date => date && setCompForm({ ...compForm, date })}
-                locale={ru}
-              />
-            </PopoverContent>
-          </Popover>
+          <Label>Период проведения</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-sm">
+                  <CalendarIcon className="h-4 w-4 mr-1" />
+                  {format(compForm.startDate, 'd MMM yyyy', { locale: ru })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={compForm.startDate}
+                  onSelect={date => date && setCompForm({ ...compForm, startDate: date })}
+                  locale={ru}
+                />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-sm">
+                  <CalendarIcon className="h-4 w-4 mr-1" />
+                  {format(compForm.endDate, 'd MMM yyyy', { locale: ru })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={compForm.endDate}
+                  onSelect={date => date && setCompForm({ ...compForm, endDate: date })}
+                  locale={ru}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -562,7 +590,7 @@ export default function CompetitionTracker() {
               </Button>
               <div className="flex-1 min-w-0">
                 <h1 className="font-semibold text-lg truncate">{selectedCompetition.name}</h1>
-                <p className="text-sm text-gray-500">{formatDate(selectedCompetition.date)}</p>
+                <p className="text-sm text-gray-500">{formatPeriod(selectedCompetition.startDate, selectedCompetition.endDate)}</p>
               </div>
               <div className="flex gap-1">
                 <Button
@@ -861,7 +889,7 @@ export default function CompetitionTracker() {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="font-semibold">{competition.name}</h3>
-                        <p className="text-sm text-gray-500">{formatDate(competition.date)}</p>
+                        <p className="text-sm text-gray-500">{formatPeriod(competition.startDate, competition.endDate)}</p>
                       </div>
                       {competition.isArchived && (
                         <Badge variant="secondary">Архив</Badge>

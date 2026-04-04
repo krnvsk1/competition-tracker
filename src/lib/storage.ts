@@ -23,7 +23,8 @@ export interface Team {
 export interface Competition {
   id: string
   name: string
-  date: string
+  startDate: string
+  endDate: string
   mealCost: number
   notes: string
   isArchived: boolean
@@ -73,7 +74,7 @@ export function getCompetitions(archived: boolean): Competition[] {
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       )
     }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
 }
 
 export function getCompetitionById(id: string): Competition | null {
@@ -92,7 +93,8 @@ export function getCompetitionById(id: string): Competition | null {
 
 export function createCompetition(data: {
   name: string
-  date: string
+  startDate: string
+  endDate: string
   mealCost: number
   notes: string
 }): Competition {
@@ -102,7 +104,8 @@ export function createCompetition(data: {
   const competition: Competition = {
     id: generateId(),
     name: data.name,
-    date: new Date(data.date).toISOString(),
+    startDate: new Date(data.startDate).toISOString(),
+    endDate: new Date(data.endDate).toISOString(),
     mealCost: data.mealCost || 0,
     notes: data.notes || '',
     isArchived: false,
@@ -120,7 +123,8 @@ export function updateCompetition(
   id: string,
   data: {
     name?: string
-    date?: string
+    startDate?: string
+    endDate?: string
     mealCost?: number
     notes?: string
     isArchived?: boolean
@@ -134,7 +138,8 @@ export function updateCompetition(
   competitions[idx] = {
     ...competitions[idx],
     ...data,
-    date: data.date ? new Date(data.date).toISOString() : competitions[idx].date,
+    startDate: data.startDate ? new Date(data.startDate).toISOString() : competitions[idx].startDate,
+    endDate: data.endDate ? new Date(data.endDate).toISOString() : competitions[idx].endDate,
     updatedAt: now
   }
 
