@@ -53,11 +53,9 @@ interface Team {
 interface Competition {
   id: string
   name: string
-  type: string
   startDate: string
   endDate: string
   mealCost: number
-  organizer: string
   notes: string
   isArchived: boolean
   createdAt: string
@@ -87,11 +85,9 @@ export default function CompetitionTracker() {
   // Форма соревнования
   const [compForm, setCompForm] = useState({
     name: '',
-    type: '',
     startDate: new Date(),
     endDate: new Date(),
     mealCost: 0,
-    organizer: '',
     notes: ''
   })
 
@@ -152,11 +148,9 @@ export default function CompetitionTracker() {
   const resetCompForm = () => {
     setCompForm({
       name: '',
-      type: '',
       startDate: new Date(),
       endDate: new Date(),
       mealCost: 0,
-      organizer: '',
       notes: ''
     })
   }
@@ -352,11 +346,9 @@ export default function CompetitionTracker() {
   const openEditCompetition = (competition: Competition) => {
     setCompForm({
       name: competition.name,
-      type: competition.type || '',
       startDate: new Date(competition.startDate),
       endDate: new Date(competition.endDate),
       mealCost: competition.mealCost,
-      organizer: competition.organizer || '',
       notes: competition.notes
     })
     setShowEditCompetition(true)
@@ -516,24 +508,6 @@ export default function CompetitionTracker() {
         </div>
 
         <div className="space-y-2">
-          <Label>Тип</Label>
-          <Input
-            value={compForm.type}
-            onChange={e => setCompForm({ ...compForm, type: e.target.value })}
-            placeholder="коммерческий турнир / рейтинг"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Организатор</Label>
-          <Input
-            value={compForm.organizer}
-            onChange={e => setCompForm({ ...compForm, organizer: e.target.value })}
-            placeholder="ФИО, клуб, телефон"
-          />
-        </div>
-
-        <div className="space-y-2">
           <Label>Период проведения</Label>
           <div className="grid grid-cols-2 gap-2">
             <Popover>
@@ -617,7 +591,6 @@ export default function CompetitionTracker() {
               <div className="flex-1 min-w-0">
                 <h1 className="font-semibold text-lg truncate">{selectedCompetition.name}</h1>
                 <p className="text-sm text-gray-500">{formatPeriod(selectedCompetition.startDate, selectedCompetition.endDate)}</p>
-                {selectedCompetition.type && <p className="text-xs text-gray-400">{selectedCompetition.type}</p>}
               </div>
               <div className="flex gap-1">
                 <Button
@@ -917,19 +890,11 @@ export default function CompetitionTracker() {
                       <div>
                         <h3 className="font-semibold">{competition.name}</h3>
                         <p className="text-sm text-gray-500">{formatPeriod(competition.startDate, competition.endDate)}</p>
-                        {competition.type && <p className="text-xs text-gray-400 mt-0.5">{competition.type}</p>}
                       </div>
                       {competition.isArchived && (
                         <Badge variant="secondary">Архив</Badge>
                       )}
                     </div>
-
-                    {competition.organizer && (
-                      <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-2">
-                        <Users className="h-3.5 w-3.5" />
-                        <span>{competition.organizer}</span>
-                      </div>
-                    )}
 
                     <div className="flex flex-wrap gap-3 text-sm">
                       <Badge variant="outline">

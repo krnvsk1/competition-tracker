@@ -23,11 +23,9 @@ export interface Team {
 export interface Competition {
   id: string
   name: string
-  type: string
   startDate: string
   endDate: string
   mealCost: number
-  organizer: string
   notes: string
   isArchived: boolean
   createdAt: string
@@ -95,12 +93,10 @@ export function getCompetitionById(id: string): Competition | null {
 
 export function createCompetition(data: {
   name: string
-  type?: string
   startDate: string
   endDate: string
-  mealCost?: number
-  organizer?: string
-  notes?: string
+  mealCost: number
+  notes: string
 }): Competition {
   const competitions = readJSON<Competition>(COMPETITIONS_FILE)
   const now = new Date().toISOString()
@@ -108,11 +104,9 @@ export function createCompetition(data: {
   const competition: Competition = {
     id: generateId(),
     name: data.name,
-    type: data.type || '',
     startDate: new Date(data.startDate).toISOString(),
     endDate: new Date(data.endDate).toISOString(),
     mealCost: data.mealCost || 0,
-    organizer: data.organizer || '',
     notes: data.notes || '',
     isArchived: false,
     createdAt: now,
@@ -129,11 +123,9 @@ export function updateCompetition(
   id: string,
   data: {
     name?: string
-    type?: string
     startDate?: string
     endDate?: string
     mealCost?: number
-    organizer?: string
     notes?: string
     isArchived?: boolean
   }
