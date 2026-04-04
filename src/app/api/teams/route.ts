@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       hasTelegram,
       hasMaxMessenger,
       hasPhoneContact,
+      hasWhatsApp,
       notes,
       competitionId
     })

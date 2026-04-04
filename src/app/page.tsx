@@ -79,6 +79,7 @@ export default function CompetitionTracker() {
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
   const [telegramConnected, setTelegramConnected] = useState(false)
+  const [isEditor, setIsEditor] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Диалоги
@@ -151,6 +152,23 @@ export default function CompetitionTracker() {
   useEffect(() => {
     loadCompetitions()
   }, [loadCompetitions])
+
+  // Проверка PIN для режима редактирования
+  useEffect(() => {
+    const saved = localStorage.getItem('ct_editor_pin')
+    if (saved === '7777') setIsEditor(true)
+  }, [])
+
+  const loginAsEditor = () => {
+    const pin = prompt('Введите PIN для режима редактирования:')
+    if (pin === '7777') {
+      localStorage.setItem('ct_editor_pin', pin)
+      setIsEditor(true)
+      toast.success('Режим редактирования включён')
+    } else if (pin !== null) {
+      toast.error('Неверный PIN')
+    }
+  }
 
   // Сброс формы соревнования
   // Экспорт данных
@@ -694,6 +712,7 @@ export default function CompetitionTracker() {
                 <h1 className="font-semibold text-lg truncate">{selectedCompetition.name}</h1>
                 <p className="text-sm text-gray-500">{formatPeriod(selectedCompetition.startDate, selectedCompetition.endDate)}</p>
               </div>
+              {isEditor && (
               <div className="flex gap-1">
                 <Button
                   variant="ghost"
@@ -725,6 +744,7 @@ export default function CompetitionTracker() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -770,10 +790,12 @@ export default function CompetitionTracker() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Команды</h2>
+              {isEditor && (
               <Button size="sm" onClick={() => setShowAddTeam(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 Добавить
               </Button>
+              )}
             </div>
 
             {selectedCompetition.teams.length === 0 ? (
@@ -787,7 +809,7 @@ export default function CompetitionTracker() {
             ) : (
               <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
                 {selectedCompetition.teams.map(team => (
-                  <Card key={team.id} className="overflow-hidden">
+                  <Card key={team.id} className={`overflow-hidden ${isEditor ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''}`} onClick={() => isEditor && openEditTeam(team)}>
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0">
@@ -816,11 +838,12 @@ export default function CompetitionTracker() {
                             )}
                           </div>
                         </div>
+                        {isEditor && (
                         <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => openEditTeam(team)}
+                            onClick={(e) => { e.stopPropagation(); openEditTeam(team) }}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -828,7 +851,8 @@ export default function CompetitionTracker() {
                             variant="ghost"
                             size="sm"
                             className="text-red-500"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation()
                               setDeleteTarget({ type: 'team', id: team.id })
                               setShowDeleteDialog(true)
                             }}
@@ -836,6 +860,7 @@ export default function CompetitionTracker() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
+                        )}
                       </div>
 
                       {team.phoneNumber && (
@@ -977,7 +1002,16 @@ export default function CompetitionTracker() {
               >
                 {showArchived ? 'Активные' : 'Архив'}
               </Button>
-              {!showArchived && (
+              {isEditor ? (
+                <Badge variant="secondary" className="bg-green-100 text-green-700 h-8 px-2.5 flex items-center cursor-pointer" onClick={() => { localStorage.removeItem('ct_editor_pin'); setIsEditor(false); toast.success('Режим просмотра') }}>
+                  ✏️ Редактор
+                </Badge>
+              ) : (
+                <Button variant="outline" size="sm" onClick={loginAsEditor}>
+                  🔑 Войти
+                </Button>
+              )}
+              {!showArchived && isEditor && (
                 <Button size="sm" onClick={() => setShowAddCompetition(true)}>
                   <Plus className="h-4 w-4 mr-1" />
                   Добавить

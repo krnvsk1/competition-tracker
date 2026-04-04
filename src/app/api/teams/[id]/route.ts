@@ -54,6 +54,7 @@ export async function PUT(
       hasTelegram,
       hasMaxMessenger,
       hasPhoneContact,
+      hasWhatsApp,
       notes
     })
 
