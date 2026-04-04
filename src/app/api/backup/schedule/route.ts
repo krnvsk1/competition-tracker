@@ -91,7 +91,7 @@ export async function GET() {
     if (!res.ok) {
       const errText = await res.text()
       console.error('Telegram send error:', errText)
-      return NextResponse.json({ error: 'Ошибка отправки в Telegram' }, { status: 500 })
+      return NextResponse.json({ error: 'Ошибка отправки в Telegram', details: errText }, { status: 500 })
     }
 
     return NextResponse.json({
