@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getTeamById, updateTeam, deleteTeam } from '@/lib/storage'
+
 export const dynamic = 'force-dynamic'
 
 // GET /api/teams/[id] - получить команду по ID
@@ -9,18 +10,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    
-    const team = await db.team.findUnique({
-      where: { id },
-      include: {
-        competition: true
-      }
-    })
-    
+    const team = getTeamById(id)
+
     if (!team) {
       return NextResponse.json({ error: 'Команда не найдена' }, { status: 404 })
     }
-    
+
     return NextResponse.json(team)
   } catch (error) {
     console.error('Error fetching team:', error)
@@ -36,31 +31,36 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { 
-      name, 
-      contactName, 
-      phoneNumber, 
-      participantCount, 
-      mealPaid, 
-      hasTelegram, 
-      hasMaxMessenger, 
-      notes 
+    const {
+      name,
+      contactName,
+      phoneNumber,
+      participantCount,
+      mealDays,
+      mealPaid,
+      hasTelegram,
+      hasMaxMessenger,
+      hasPhoneContact,
+      notes
     } = body
-    
-    const team = await db.team.update({
-      where: { id },
-      data: {
-        name,
-        contactName,
-        phoneNumber,
-        participantCount,
-        mealPaid,
-        hasTelegram,
-        hasMaxMessenger,
-        notes
-      }
+
+    const team = updateTeam(id, {
+      name,
+      contactName,
+      phoneNumber,
+      participantCount,
+      mealDays,
+      mealPaid,
+      hasTelegram,
+      hasMaxMessenger,
+      hasPhoneContact,
+      notes
     })
-    
+
+    if (!team) {
+      return NextResponse.json({ error: 'Команда не найдена' }, { status: 404 })
+    }
+
     return NextResponse.json(team)
   } catch (error) {
     console.error('Error updating team:', error)
@@ -75,11 +75,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    
-    await db.team.delete({
-      where: { id }
-    })
-    
+    const success = deleteTeam(id)
+
+    if (!success) {
+      return NextResponse.json({ error: 'Команда не найдена' }, { status: 404 })
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting team:', error)

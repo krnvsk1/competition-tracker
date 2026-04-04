@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -13,23 +13,22 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { 
-  Trophy, 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Archive, 
+import {
+  Trophy,
+  Plus,
+  Trash2,
+  Edit,
+  Archive,
   ArchiveRestore,
-  Users, 
-  Phone, 
-  Calendar as CalendarIcon, 
-  MapPin, 
+  Users,
+  Phone,
+  Calendar as CalendarIcon,
   ChevronLeft,
   CheckCircle,
   XCircle,
-  Send,
   MessageCircle,
-  Utensils
+  Utensils,
+  CircleDollarSign
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -40,11 +39,14 @@ interface Team {
   contactName: string
   phoneNumber: string
   participantCount: number
+  mealDays: number
   mealPaid: boolean
   hasTelegram: boolean
   hasMaxMessenger: boolean
+  hasPhoneContact: boolean
   notes: string
   createdAt: string
+  updatedAt: string
   competitionId: string
 }
 
@@ -52,11 +54,17 @@ interface Competition {
   id: string
   name: string
   date: string
-  location: string
+  mealCost: number
   notes: string
   isArchived: boolean
   createdAt: string
+  updatedAt: string
   teams: Team[]
+}
+
+// Format number with spaces as thousand separator
+function formatMoney(amount: number): string {
+  return amount.toLocaleString('ru-RU') + ' ₽'
 }
 
 export default function CompetitionTracker() {
@@ -64,7 +72,7 @@ export default function CompetitionTracker() {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
-  
+
   // Диалоги
   const [showAddCompetition, setShowAddCompetition] = useState(false)
   const [showEditCompetition, setShowEditCompetition] = useState(false)
@@ -72,24 +80,26 @@ export default function CompetitionTracker() {
   const [showEditTeam, setShowEditTeam] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'competition' | 'team', id: string } | null>(null)
-  
+
   // Форма соревнования
   const [compForm, setCompForm] = useState({
     name: '',
     date: new Date(),
-    location: '',
+    mealCost: 0,
     notes: ''
   })
-  
+
   // Форма команды
   const [teamForm, setTeamForm] = useState({
     name: '',
     contactName: '',
     phoneNumber: '',
     participantCount: 1,
+    mealDays: 1,
     mealPaid: false,
     hasTelegram: false,
     hasMaxMessenger: false,
+    hasPhoneContact: false,
     notes: ''
   })
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -127,7 +137,7 @@ export default function CompetitionTracker() {
     setCompForm({
       name: '',
       date: new Date(),
-      location: '',
+      mealCost: 0,
       notes: ''
     })
   }
@@ -139,9 +149,11 @@ export default function CompetitionTracker() {
       contactName: '',
       phoneNumber: '',
       participantCount: 1,
+      mealDays: 1,
       mealPaid: false,
       hasTelegram: false,
       hasMaxMessenger: false,
+      hasPhoneContact: false,
       notes: ''
     })
     setEditingTeam(null)
@@ -153,14 +165,14 @@ export default function CompetitionTracker() {
       toast.error('Введите название соревнования')
       return
     }
-    
+
     try {
       const res = await fetch('/api/competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(compForm)
       })
-      
+
       if (res.ok) {
         toast.success('Соревнование создано')
         setShowAddCompetition(false)
@@ -177,14 +189,14 @@ export default function CompetitionTracker() {
   // Обновление соревнования
   const updateCompetition = async () => {
     if (!selectedCompetition || !compForm.name) return
-    
+
     try {
       const res = await fetch(`/api/competitions/${selectedCompetition.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(compForm)
       })
-      
+
       if (res.ok) {
         toast.success('Соревнование обновлено')
         setShowEditCompetition(false)
@@ -204,7 +216,7 @@ export default function CompetitionTracker() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isArchived: !competition.isArchived })
       })
-      
+
       if (res.ok) {
         toast.success(competition.isArchived ? 'Восстановлено из архива' : 'Перемещено в архив')
         loadCompetitions()
@@ -220,14 +232,14 @@ export default function CompetitionTracker() {
   // Удаление
   const handleDelete = async () => {
     if (!deleteTarget) return
-    
+
     try {
-      const endpoint = deleteTarget.type === 'competition' 
+      const endpoint = deleteTarget.type === 'competition'
         ? `/api/competitions/${deleteTarget.id}`
         : `/api/teams/${deleteTarget.id}`
-      
+
       const res = await fetch(endpoint, { method: 'DELETE' })
-      
+
       if (res.ok) {
         toast.success('Удалено')
         if (deleteTarget.type === 'competition') {
@@ -249,14 +261,14 @@ export default function CompetitionTracker() {
       toast.error('Введите название команды')
       return
     }
-    
+
     try {
       const res = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...teamForm, competitionId: selectedCompetition.id })
       })
-      
+
       if (res.ok) {
         toast.success('Команда добавлена')
         setShowAddTeam(false)
@@ -271,14 +283,14 @@ export default function CompetitionTracker() {
   // Обновление команды
   const updateTeam = async () => {
     if (!editingTeam || !teamForm.name) return
-    
+
     try {
       const res = await fetch(`/api/teams/${editingTeam.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(teamForm)
       })
-      
+
       if (res.ok) {
         toast.success('Команда обновлена')
         setShowEditTeam(false)
@@ -298,9 +310,11 @@ export default function CompetitionTracker() {
       contactName: team.contactName,
       phoneNumber: team.phoneNumber,
       participantCount: team.participantCount,
+      mealDays: team.mealDays,
       mealPaid: team.mealPaid,
       hasTelegram: team.hasTelegram,
       hasMaxMessenger: team.hasMaxMessenger,
+      hasPhoneContact: team.hasPhoneContact,
       notes: team.notes
     })
     setShowEditTeam(true)
@@ -311,7 +325,7 @@ export default function CompetitionTracker() {
     setCompForm({
       name: competition.name,
       date: new Date(competition.date),
-      location: competition.location,
+      mealCost: competition.mealCost,
       notes: competition.notes
     })
     setShowEditCompetition(true)
@@ -331,18 +345,191 @@ export default function CompetitionTracker() {
     return phone
   }
 
-  // Статистика соревнования
+  // Статистика соревнования — с расчётом денег и порций
   const getStats = (competition: Competition) => {
+    const totalTeams = competition.teams.length
     const totalParticipants = competition.teams.reduce((sum, t) => sum + t.participantCount, 0)
-    const paidMeals = competition.teams.filter(t => t.mealPaid).reduce((sum, t) => sum + t.participantCount, 0)
-    const unpaidMeals = totalParticipants - paidMeals
-    return { totalParticipants, paidMeals, unpaidMeals }
+
+    const paidTeams = competition.teams.filter(t => t.mealPaid)
+    const unpaidTeams = competition.teams.filter(t => !t.mealPaid)
+
+    const paidPortions = paidTeams.reduce((sum, t) => sum + t.participantCount * t.mealDays, 0)
+    const unpaidPortions = unpaidTeams.reduce((sum, t) => sum + t.participantCount * t.mealDays, 0)
+    const totalPortions = paidPortions + unpaidPortions
+
+    const mealCost = competition.mealCost || 0
+    const paidCost = paidPortions * mealCost
+    const unpaidCost = unpaidPortions * mealCost
+    const totalCost = totalPortions * mealCost
+
+    return { totalTeams, totalParticipants, paidPortions, unpaidPortions, totalPortions, paidCost, unpaidCost, totalCost, mealCost }
   }
+
+  // Форма команды (используется в обоих диалогах — создание и редактирование)
+  const renderTeamFormFields = () => (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label>Название команды *</Label>
+        <Input
+          value={teamForm.name}
+          onChange={e => setTeamForm({ ...teamForm, name: e.target.value })}
+          placeholder="Название команды"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Количество участников</Label>
+        <Input
+          type="number"
+          min={1}
+          value={teamForm.participantCount}
+          onChange={e => setTeamForm({ ...teamForm, participantCount: parseInt(e.target.value) || 1 })}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label>Питание оплачено</Label>
+        <Switch
+          checked={teamForm.mealPaid}
+          onCheckedChange={checked => setTeamForm({ ...teamForm, mealPaid: checked })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Дней питания</Label>
+        <Input
+          type="number"
+          min={1}
+          value={teamForm.mealDays}
+          onChange={e => setTeamForm({ ...teamForm, mealDays: parseInt(e.target.value) || 1 })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Имя контакта</Label>
+        <Input
+          value={teamForm.contactName}
+          onChange={e => setTeamForm({ ...teamForm, contactName: e.target.value })}
+          placeholder="Имя контактного лица"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Телефон</Label>
+        <Input
+          value={teamForm.phoneNumber}
+          onChange={e => setTeamForm({ ...teamForm, phoneNumber: e.target.value })}
+          placeholder="+7 (999) 123-45-67"
+          type="tel"
+        />
+      </div>
+
+      <div className="flex gap-3">
+        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+          <Switch
+            checked={teamForm.hasTelegram}
+            onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
+          />
+          <Label className="text-sm">Telegram</Label>
+        </div>
+        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+          <Switch
+            checked={teamForm.hasMaxMessenger}
+            onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
+          />
+          <Label className="text-sm">MAX</Label>
+        </div>
+        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+          <Switch
+            checked={teamForm.hasPhoneContact}
+            onCheckedChange={checked => setTeamForm({ ...teamForm, hasPhoneContact: checked })}
+          />
+          <Label className="text-sm">По телефону</Label>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Заметки</Label>
+        <Textarea
+          value={teamForm.notes}
+          onChange={e => setTeamForm({ ...teamForm, notes: e.target.value })}
+          placeholder="Дополнительная информация"
+          rows={2}
+        />
+      </div>
+    </div>
+  )
+
+  // Форма соревнования (используется в обоих диалогах)
+  const renderCompFormFields = (onSubmit: () => void, submitLabel: string) => (
+    <>
+      <DialogHeader>
+        <DialogTitle>{submitLabel === 'Создать' ? 'Новое соревнование' : 'Редактировать соревнование'}</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label>Название *</Label>
+          <Input
+            value={compForm.name}
+            onChange={e => setCompForm({ ...compForm, name: e.target.value })}
+            placeholder="Название соревнования"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Дата проведения</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {format(compForm.date, 'd MMMM yyyy', { locale: ru })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={compForm.date}
+                onSelect={date => date && setCompForm({ ...compForm, date })}
+                locale={ru}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Стоимость 1 питания</Label>
+          <Input
+            type="number"
+            min={0}
+            value={compForm.mealCost || ''}
+            onChange={e => setCompForm({ ...compForm, mealCost: parseInt(e.target.value) || 0 })}
+            placeholder="0"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Заметки</Label>
+          <Textarea
+            value={compForm.notes}
+            onChange={e => setCompForm({ ...compForm, notes: e.target.value })}
+            placeholder="Дополнительная информация"
+            rows={2}
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => { setShowAddCompetition(false); setShowEditCompetition(false); resetCompForm(); }}>
+          Отмена
+        </Button>
+        <Button type="button" onClick={onSubmit}>{submitLabel}</Button>
+      </DialogFooter>
+    </>
+  )
 
   // Если выбрано соревнование - показываем детали
   if (selectedCompetition) {
     const stats = getStats(selectedCompetition)
-    
+
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
@@ -357,15 +544,15 @@ export default function CompetitionTracker() {
                 <p className="text-sm text-gray-500">{formatDate(selectedCompetition.date)}</p>
               </div>
               <div className="flex gap-1">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => openEditCompetition(selectedCompetition)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => toggleArchive(selectedCompetition)}
                 >
@@ -375,8 +562,8 @@ export default function CompetitionTracker() {
                     <Archive className="h-4 w-4" />
                   )}
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   className="text-red-500"
                   onClick={() => {
@@ -397,11 +584,11 @@ export default function CompetitionTracker() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Users className="h-5 w-5 text-blue-600" />
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Trophy className="h-5 w-5 text-yellow-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{selectedCompetition.teams.length}</p>
+                    <p className="text-2xl font-bold">{stats.totalTeams}</p>
                     <p className="text-sm text-gray-500">Команд</p>
                   </div>
                 </div>
@@ -411,7 +598,7 @@ export default function CompetitionTracker() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-100 rounded-lg">
-                    <Trophy className="h-5 w-5 text-purple-600" />
+                    <Users className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats.totalParticipants}</p>
@@ -424,11 +611,11 @@ export default function CompetitionTracker() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-100 rounded-lg">
-                    <Utensils className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-green-600">{stats.paidMeals}</p>
-                    <p className="text-sm text-gray-500">Питание оплачено</p>
+                    <p className="text-2xl font-bold text-green-600">{formatMoney(stats.paidCost)}</p>
+                    <p className="text-sm text-gray-500">Оплачено</p>
                   </div>
                 </div>
               </CardContent>
@@ -436,29 +623,45 @@ export default function CompetitionTracker() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <Utensils className="h-5 w-5 text-red-600" />
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <XCircle className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-red-600">{stats.unpaidMeals}</p>
+                    <p className="text-2xl font-bold text-orange-600">{formatMoney(stats.unpaidCost)}</p>
                     <p className="text-sm text-gray-500">Не оплачено</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Место проведения */}
-          {selectedCompetition.location && (
-            <Card>
+            <Card className="col-span-2">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="h-4 w-4" />
-                  <span>{selectedCompetition.location}</span>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Utensils className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600">{formatMoney(stats.totalCost)}</p>
+                    <p className="text-sm text-gray-500">Итого ({stats.totalPortions} порций)</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
+            {stats.mealCost > 0 && (
+              <Card className="col-span-2">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <CircleDollarSign className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-muted-foreground">{formatMoney(stats.mealCost)}</p>
+                      <p className="text-sm text-gray-500">За 1 питание</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Команды */}
           <div className="space-y-3">
@@ -475,78 +678,85 @@ export default function CompetitionTracker() {
                 <CardContent className="p-8 text-center text-gray-500">
                   <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p>Нет команд</p>
-                  <p className="text-sm">Нажмите "Добавить" чтобы добавить команду</p>
+                  <p className="text-sm">Нажмите &quot;Добавить&quot; чтобы добавить команду</p>
                 </CardContent>
               </Card>
             ) : (
-              selectedCompetition.teams.map(team => (
-                <Card key={team.id} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium truncate">{team.name}</h3>
-                          {team.mealPaid ? (
-                            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
-                          )}
+              <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
+                {selectedCompetition.teams.map(team => (
+                  <Card key={team.id} className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-medium truncate">{team.name}</h3>
+                            {team.mealPaid ? (
+                              <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
+                            )}
+                            {team.hasPhoneContact && (
+                              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                По телефону
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                            <span>{team.participantCount} чел. · {team.mealDays} дн. пит.</span>
+                            {team.contactName && (
+                              <span className="truncate">{team.contactName}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                          <span>{team.participantCount} чел.</span>
-                          {team.contactName && (
-                            <span className="truncate">{team.contactName}</span>
-                          )}
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditTeam(team)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500"
+                            onClick={() => {
+                              setDeleteTarget({ type: 'team', id: team.id })
+                              setShowDeleteDialog(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => openEditTeam(team)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-red-500"
-                          onClick={() => {
-                            setDeleteTarget({ type: 'team', id: team.id })
-                            setShowDeleteDialog(true)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {team.phoneNumber && (
-                      <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
-                        <Phone className="h-4 w-4" />
-                        <a href={`tel:${team.phoneNumber}`} className="hover:underline">
-                          {formatPhone(team.phoneNumber)}
-                        </a>
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-2">
-                      {team.hasTelegram && (
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          <Send className="h-3 w-3 mr-1" />
-                          Telegram
-                        </Badge>
+
+                      {team.phoneNumber && (
+                        <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
+                          <Phone className="h-4 w-4" />
+                          <a href={`tel:${team.phoneNumber}`} className="hover:underline">
+                            {formatPhone(team.phoneNumber)}
+                          </a>
+                        </div>
                       )}
-                      {team.hasMaxMessenger && (
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                          <MessageCircle className="h-3 w-3 mr-1" />
-                          MAX
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+
+                      <div className="flex gap-2 flex-wrap">
+                        {team.hasTelegram && (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            Telegram
+                          </Badge>
+                        )}
+                        {team.hasMaxMessenger && (
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            MAX
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -557,80 +767,7 @@ export default function CompetitionTracker() {
             <DialogHeader>
               <DialogTitle>Новая команда</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Название команды *</Label>
-                <Input 
-                  value={teamForm.name}
-                  onChange={e => setTeamForm({ ...teamForm, name: e.target.value })}
-                  placeholder="Название команды"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Количество участников</Label>
-                <Input 
-                  type="number"
-                  min={1}
-                  value={teamForm.participantCount}
-                  onChange={e => setTeamForm({ ...teamForm, participantCount: parseInt(e.target.value) || 1 })}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label>Питание оплачено</Label>
-                <Switch 
-                  checked={teamForm.mealPaid}
-                  onCheckedChange={checked => setTeamForm({ ...teamForm, mealPaid: checked })}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Имя контакта</Label>
-                <Input 
-                  value={teamForm.contactName}
-                  onChange={e => setTeamForm({ ...teamForm, contactName: e.target.value })}
-                  placeholder="Имя контактного лица"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Телефон</Label>
-                <Input 
-                  value={teamForm.phoneNumber}
-                  onChange={e => setTeamForm({ ...teamForm, phoneNumber: e.target.value })}
-                  placeholder="+7 (999) 123-45-67"
-                  type="tel"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Telegram</Label>
-                  <Switch 
-                    checked={teamForm.hasTelegram}
-                    onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">MAX</Label>
-                  <Switch 
-                    checked={teamForm.hasMaxMessenger}
-                    onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Заметки</Label>
-                <Textarea 
-                  value={teamForm.notes}
-                  onChange={e => setTeamForm({ ...teamForm, notes: e.target.value })}
-                  placeholder="Дополнительная информация"
-                  rows={2}
-                />
-              </div>
-            </div>
+            {renderTeamFormFields()}
             <DialogFooter>
               <Button variant="outline" onClick={() => { setShowAddTeam(false); resetTeamForm(); }}>
                 Отмена
@@ -646,80 +783,7 @@ export default function CompetitionTracker() {
             <DialogHeader>
               <DialogTitle>Редактировать команду</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Название команды *</Label>
-                <Input 
-                  value={teamForm.name}
-                  onChange={e => setTeamForm({ ...teamForm, name: e.target.value })}
-                  placeholder="Название команды"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Количество участников</Label>
-                <Input 
-                  type="number"
-                  min={1}
-                  value={teamForm.participantCount}
-                  onChange={e => setTeamForm({ ...teamForm, participantCount: parseInt(e.target.value) || 1 })}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label>Питание оплачено</Label>
-                <Switch 
-                  checked={teamForm.mealPaid}
-                  onCheckedChange={checked => setTeamForm({ ...teamForm, mealPaid: checked })}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Имя контакта</Label>
-                <Input 
-                  value={teamForm.contactName}
-                  onChange={e => setTeamForm({ ...teamForm, contactName: e.target.value })}
-                  placeholder="Имя контактного лица"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Телефон</Label>
-                <Input 
-                  value={teamForm.phoneNumber}
-                  onChange={e => setTeamForm({ ...teamForm, phoneNumber: e.target.value })}
-                  placeholder="+7 (999) 123-45-67"
-                  type="tel"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Telegram</Label>
-                  <Switch 
-                    checked={teamForm.hasTelegram}
-                    onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">MAX</Label>
-                  <Switch 
-                    checked={teamForm.hasMaxMessenger}
-                    onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Заметки</Label>
-                <Textarea 
-                  value={teamForm.notes}
-                  onChange={e => setTeamForm({ ...teamForm, notes: e.target.value })}
-                  placeholder="Дополнительная информация"
-                  rows={2}
-                />
-              </div>
-            </div>
+            {renderTeamFormFields()}
             <DialogFooter>
               <Button variant="outline" onClick={() => { setShowEditTeam(false); resetTeamForm(); }}>
                 Отмена
@@ -732,64 +796,7 @@ export default function CompetitionTracker() {
         {/* Диалог редактирования соревнования */}
         <Dialog open={showEditCompetition} onOpenChange={setShowEditCompetition}>
           <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Редактировать соревнование</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Название *</Label>
-                <Input 
-                  value={compForm.name}
-                  onChange={e => setCompForm({ ...compForm, name: e.target.value })}
-                  placeholder="Название соревнования"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Дата проведения</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      {format(compForm.date, 'd MMMM yyyy', { locale: ru })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={compForm.date}
-                      onSelect={date => date && setCompForm({ ...compForm, date })}
-                      locale={ru}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Место проведения</Label>
-                <Input 
-                  value={compForm.location}
-                  onChange={e => setCompForm({ ...compForm, location: e.target.value })}
-                  placeholder="Город, адрес"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Заметки</Label>
-                <Textarea 
-                  value={compForm.notes}
-                  onChange={e => setCompForm({ ...compForm, notes: e.target.value })}
-                  placeholder="Дополнительная информация"
-                  rows={2}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setShowEditCompetition(false); resetCompForm(); }}>
-                Отмена
-              </Button>
-              <Button onClick={updateCompetition}>Сохранить</Button>
-            </DialogFooter>
+            {renderCompFormFields(updateCompetition, 'Сохранить')}
           </DialogContent>
         </Dialog>
 
@@ -799,8 +806,8 @@ export default function CompetitionTracker() {
             <AlertDialogHeader>
               <AlertDialogTitle>Удалить?</AlertDialogTitle>
               <AlertDialogDescription>
-                Это действие нельзя отменить. {deleteTarget?.type === 'competition' 
-                  ? 'Все команды в этом соревновании будут также удалены.' 
+                Это действие нельзя отменить. {deleteTarget?.type === 'competition'
+                  ? 'Все команды в этом соревновании будут также удалены.'
                   : 'Команда будет удалена.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -830,8 +837,8 @@ export default function CompetitionTracker() {
               </h1>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
               >
@@ -861,9 +868,9 @@ export default function CompetitionTracker() {
                 {showArchived ? 'Архив пуст' : 'Нет соревнований'}
               </p>
               <p className="text-sm">
-                {showArchived 
-                  ? 'Нет архивированных соревнований' 
-                  : 'Нажмите "Добавить" чтобы создать соревнование'}
+                {showArchived
+                  ? 'Нет архивированных соревнований'
+                  : 'Нажмите «Добавить» чтобы создать соревнование'}
               </p>
             </CardContent>
           </Card>
@@ -872,7 +879,7 @@ export default function CompetitionTracker() {
             {competitions.map(competition => {
               const stats = getStats(competition)
               return (
-                <Card 
+                <Card
                   key={competition.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setSelectedCompetition(competition)}
@@ -887,14 +894,7 @@ export default function CompetitionTracker() {
                         <Badge variant="secondary">Архив</Badge>
                       )}
                     </div>
-                    
-                    {competition.location && (
-                      <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
-                        <MapPin className="h-3 w-3" />
-                        <span>{competition.location}</span>
-                      </div>
-                    )}
-                    
+
                     <div className="flex flex-wrap gap-3 text-sm">
                       <Badge variant="outline">
                         <Users className="h-3 w-3 mr-1" />
@@ -903,15 +903,20 @@ export default function CompetitionTracker() {
                       <Badge variant="outline">
                         {stats.totalParticipants} участников
                       </Badge>
-                      {stats.paidMeals > 0 && (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          <Utensils className="h-3 w-3 mr-1" />
-                          {stats.paidMeals} пит.
+                      {competition.mealCost > 0 && (
+                        <Badge variant="outline" className="bg-gray-50">
+                          <CircleDollarSign className="h-3 w-3 mr-1" />
+                          {competition.mealCost} ₽/пит.
                         </Badge>
                       )}
-                      {stats.unpaidMeals > 0 && (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                          {stats.unpaidMeals} не оплачено
+                      {stats.paidCost > 0 && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          {formatMoney(stats.paidCost)}
+                        </Badge>
+                      )}
+                      {stats.unpaidCost > 0 && (
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          {formatMoney(stats.unpaidCost)}
                         </Badge>
                       )}
                     </div>
@@ -926,64 +931,7 @@ export default function CompetitionTracker() {
       {/* Диалог добавления соревнования */}
       <Dialog open={showAddCompetition} onOpenChange={setShowAddCompetition}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Новое соревнование</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Название *</Label>
-              <Input 
-                value={compForm.name}
-                onChange={e => setCompForm({ ...compForm, name: e.target.value })}
-                placeholder="Название соревнования"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Дата проведения</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    {format(compForm.date, 'd MMMM yyyy', { locale: ru })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={compForm.date}
-                    onSelect={date => date && setCompForm({ ...compForm, date })}
-                    locale={ru}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Место проведения</Label>
-              <Input 
-                value={compForm.location}
-                onChange={e => setCompForm({ ...compForm, location: e.target.value })}
-                placeholder="Город, адрес"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Заметки</Label>
-              <Textarea 
-                value={compForm.notes}
-                onChange={e => setCompForm({ ...compForm, notes: e.target.value })}
-                placeholder="Дополнительная информация"
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowAddCompetition(false); resetCompForm(); }}>
-              Отмена
-            </Button>
-            <Button type="button" onClick={createCompetition}>Создать</Button>
-          </DialogFooter>
+          {renderCompFormFields(createCompetition, 'Создать')}
         </DialogContent>
       </Dialog>
     </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getCompetitionById, updateCompetition, deleteCompetition } from '@/lib/storage'
+
 export const dynamic = 'force-dynamic'
 
 // GET /api/competitions/[id] - получить соревнование по ID
@@ -9,20 +10,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    
-    const competition = await db.competition.findUnique({
-      where: { id },
-      include: {
-        teams: {
-          orderBy: { createdAt: 'asc' }
-        }
-      }
-    })
-    
+    const competition = getCompetitionById(id)
+
     if (!competition) {
       return NextResponse.json({ error: 'Соревнование не найдено' }, { status: 404 })
     }
-    
+
     return NextResponse.json(competition)
   } catch (error) {
     console.error('Error fetching competition:', error)
@@ -38,19 +31,20 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, date, location, notes, isArchived } = body
-    
-    const competition = await db.competition.update({
-      where: { id },
-      data: {
-        name,
-        date: date ? new Date(date) : undefined,
-        location,
-        notes,
-        isArchived
-      }
+    const { name, date, mealCost, notes, isArchived } = body
+
+    const competition = updateCompetition(id, {
+      name,
+      date,
+      mealCost,
+      notes,
+      isArchived
     })
-    
+
+    if (!competition) {
+      return NextResponse.json({ error: 'Соревнование не найдено' }, { status: 404 })
+    }
+
     return NextResponse.json(competition)
   } catch (error) {
     console.error('Error updating competition:', error)
@@ -65,11 +59,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    
-    await db.competition.delete({
-      where: { id }
-    })
-    
+    const success = deleteCompetition(id)
+
+    if (!success) {
+      return NextResponse.json({ error: 'Соревнование не найдено' }, { status: 404 })
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting competition:', error)
