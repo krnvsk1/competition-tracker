@@ -48,6 +48,7 @@ interface Team {
   hasTelegram: boolean
   hasMaxMessenger: boolean
   hasPhoneContact: boolean
+  hasWhatsApp: boolean
   notes: string
   createdAt: string
   updatedAt: string
@@ -108,6 +109,7 @@ export default function CompetitionTracker() {
     hasTelegram: false,
     hasMaxMessenger: false,
     hasPhoneContact: false,
+    hasWhatsApp: false,
     notes: ''
   })
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -258,6 +260,7 @@ export default function CompetitionTracker() {
       hasTelegram: false,
       hasMaxMessenger: false,
       hasPhoneContact: false,
+      hasWhatsApp: false,
       notes: ''
     })
     setEditingTeam(null)
@@ -428,6 +431,7 @@ export default function CompetitionTracker() {
       hasTelegram: team.hasTelegram,
       hasMaxMessenger: team.hasMaxMessenger,
       hasPhoneContact: team.hasPhoneContact,
+      hasWhatsApp: team.hasWhatsApp,
       notes: team.notes
     })
     setShowEditTeam(true)
@@ -546,27 +550,34 @@ export default function CompetitionTracker() {
         />
       </div>
 
-      <div className="flex gap-3">
-        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+      <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
           <Switch
             checked={teamForm.hasTelegram}
             onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
           />
           <Label className="text-sm">Telegram</Label>
         </div>
-        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
           <Switch
             checked={teamForm.hasMaxMessenger}
             onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
           />
           <Label className="text-sm">MAX</Label>
         </div>
-        <div className="flex-1 flex items-center gap-2 h-10 rounded-md border px-3">
+        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
           <Switch
             checked={teamForm.hasPhoneContact}
             onCheckedChange={checked => setTeamForm({ ...teamForm, hasPhoneContact: checked })}
           />
           <Label className="text-sm">По телефону</Label>
+        </div>
+        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
+          <Switch
+            checked={teamForm.hasWhatsApp}
+            onCheckedChange={checked => setTeamForm({ ...teamForm, hasWhatsApp: checked })}
+          />
+          <Label className="text-sm">WhatsApp</Label>
         </div>
       </div>
 
@@ -790,6 +801,11 @@ export default function CompetitionTracker() {
                             {team.hasPhoneContact && (
                               <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 По телефону
+                              </Badge>
+                            )}
+                            {team.hasWhatsApp && (
+                              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                                WhatsApp
                               </Badge>
                             )}
                           </div>

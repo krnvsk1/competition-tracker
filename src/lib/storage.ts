@@ -14,6 +14,7 @@ export interface Team {
   hasTelegram: boolean
   hasMaxMessenger: boolean
   hasPhoneContact: boolean
+  hasWhatsApp: boolean
   notes: string
   createdAt: string
   updatedAt: string
@@ -195,6 +196,7 @@ export function createTeam(data: {
   hasTelegram: boolean
   hasMaxMessenger: boolean
   hasPhoneContact: boolean
+  hasWhatsApp: boolean
   notes: string
   competitionId: string
 }): Team {
@@ -212,6 +214,7 @@ export function createTeam(data: {
     hasTelegram: data.hasTelegram || false,
     hasMaxMessenger: data.hasMaxMessenger || false,
     hasPhoneContact: data.hasPhoneContact || false,
+    hasWhatsApp: data.hasWhatsApp || false,
     notes: data.notes || '',
     createdAt: now,
     updatedAt: now,
@@ -235,6 +238,7 @@ export function updateTeam(
     hasTelegram?: boolean
     hasMaxMessenger?: boolean
     hasPhoneContact?: boolean
+    hasWhatsApp?: boolean
     notes?: string
   }
 ): Team | null {
