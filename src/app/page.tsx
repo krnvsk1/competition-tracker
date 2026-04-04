@@ -31,7 +31,8 @@ import {
   Utensils,
   CircleDollarSign,
   Download,
-  Upload
+  Upload,
+  Send
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -76,6 +77,7 @@ export default function CompetitionTracker() {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [telegramConnected, setTelegramConnected] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Диалоги
@@ -198,6 +200,41 @@ export default function CompetitionTracker() {
     // Сбросить input чтобы можно было выбрать тот же файл
     e.target.value = ''
   }
+
+  // Telegram
+  const checkTelegram = async () => {
+    try {
+      const res = await fetch('/api/telegram')
+      if (res.ok) {
+        const data = await res.json()
+        setTelegramConnected(data.configured)
+      }
+    } catch {}
+  }
+
+  const setupTelegram = async () => {
+    const chatId = prompt('Введите ваш Telegram chat ID.\n\nКак получить:\n1. Напишите боту @userinfobot\n2. Он пришлёт ваш ID')
+    if (!chatId) return
+
+    try {
+      const res = await fetch('/api/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId })
+      })
+      if (res.ok) {
+        toast.success('Telegram подключён! Бэкапы будут приходить раз в сутки.')
+        setTelegramConnected(true)
+      } else {
+        toast.error('Ошибка подключения Telegram')
+      }
+    } catch {
+      toast.error('Ошибка подключения Telegram')
+    }
+  }
+
+  // Проверяем Telegram при загрузке
+  useEffect(() => { checkTelegram() }, [])
 
   const resetCompForm = () => {
     setCompForm({
@@ -902,6 +939,10 @@ export default function CompetitionTracker() {
                 <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
                   <Upload className="h-4 w-4 mr-2" />
                   Загрузить бэкап
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={setupTelegram}>
+                  <Send className="h-4 w-4 mr-2" />
+                  {telegramConnected ? '✅ Telegram подключён' : 'Подключить Telegram'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
