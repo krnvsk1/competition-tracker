@@ -159,7 +159,13 @@ export default function CompetitionTracker() {
   // Проверка PIN для режима редактирования
   useEffect(() => {
     const saved = localStorage.getItem('ct_editor_pin')
-    if (saved === '7777') setIsEditor(true)
+    if (saved === '7777') {
+      setIsEditor(true)
+    } else {
+      // Первый визит — показать выбор режима
+      const timer = setTimeout(() => setShowPinDialog(true), 300)
+      return () => clearTimeout(timer)
+    }
   }, [])
 
   const openPinDialog = () => {
@@ -943,11 +949,14 @@ export default function CompetitionTracker() {
         <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
           <DialogContent className="sm:max-w-xs">
             <DialogHeader>
-              <DialogTitle>Режим редактирования</DialogTitle>
+              <DialogTitle>Выберите режим</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
+              <p className="text-sm text-gray-500 text-center">
+                Введите PIN для редактирования или закройте для просмотра
+              </p>
               <div className="space-y-2">
-                <Label>Введите PIN-код</Label>
+                <Label className="text-center block">PIN-код</Label>
                 <Input
                   type="password"
                   inputMode="numeric"
@@ -965,7 +974,7 @@ export default function CompetitionTracker() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowPinDialog(false)}>Отмена</Button>
+              <Button variant="outline" onClick={() => setShowPinDialog(false)}>Просмотр</Button>
               <Button onClick={submitPin}>Войти</Button>
             </DialogFooter>
           </DialogContent>
@@ -1032,30 +1041,15 @@ export default function CompetitionTracker() {
               className="hidden"
               onChange={importData}
             />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowArchived(!showArchived)}
-              >
-                {showArchived ? 'Активные' : 'Архив'}
+            {isEditor ? (
+              <Badge variant="secondary" className="bg-green-100 text-green-700 h-8 px-2.5 flex items-center cursor-pointer shrink-0" onClick={() => { localStorage.removeItem('ct_editor_pin'); setIsEditor(false); toast.success('Режим просмотра') }}>
+                ✏️ Редактор
+              </Badge>
+            ) : (
+              <Button variant="outline" size="sm" onClick={openPinDialog}>
+                🔑 Войти
               </Button>
-              {isEditor ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-700 h-8 px-2.5 flex items-center cursor-pointer shrink-0" onClick={() => { localStorage.removeItem('ct_editor_pin'); setIsEditor(false); toast.success('Режим просмотра') }}>
-                  ✏️ Редактор
-                </Badge>
-              ) : (
-                <Button variant="outline" size="sm" onClick={openPinDialog}>
-                  🔑 Войти
-                </Button>
-              )}
-              {!showArchived && isEditor && (
-                <Button size="sm" onClick={() => setShowAddCompetition(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Добавить
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -1129,6 +1123,25 @@ export default function CompetitionTracker() {
                 </Card>
               )
             })}
+          </div>
+        )}
+
+        {/* Кнопки внизу */}
+        {!loading && (
+          <div className="flex gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowArchived(!showArchived)}
+            >
+              {showArchived ? 'Активные' : 'Архив'}
+            </Button>
+            {!showArchived && isEditor && (
+              <Button size="sm" onClick={() => setShowAddCompetition(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                Добавить соревнование
+              </Button>
+            )}
           </div>
         )}
       </div>
