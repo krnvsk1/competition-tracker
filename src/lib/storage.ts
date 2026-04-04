@@ -119,6 +119,14 @@ export function createCompetition(data: {
   return competition
 }
 
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const result: Partial<T> = {}
+  for (const key in obj) {
+    if (obj[key] !== undefined) result[key] = obj[key]
+  }
+  return result
+}
+
 export function updateCompetition(
   id: string,
   data: {
@@ -134,12 +142,13 @@ export function updateCompetition(
   const idx = competitions.findIndex(c => c.id === id)
   if (idx === -1) return null
 
+  const clean = stripUndefined(data)
   const now = new Date().toISOString()
   competitions[idx] = {
     ...competitions[idx],
-    ...data,
-    startDate: data.startDate ? new Date(data.startDate).toISOString() : competitions[idx].startDate,
-    endDate: data.endDate ? new Date(data.endDate).toISOString() : competitions[idx].endDate,
+    ...clean,
+    startDate: clean.startDate ? new Date(clean.startDate as string).toISOString() : competitions[idx].startDate,
+    endDate: clean.endDate ? new Date(clean.endDate as string).toISOString() : competitions[idx].endDate,
     updatedAt: now
   }
 
