@@ -601,86 +601,38 @@ export default function CompetitionTracker() {
 
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
           {/* Статистика */}
-          <div className="grid grid-cols-2 gap-3">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <Trophy className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalTeams}</p>
-                    <p className="text-sm text-gray-500">Команд</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Users className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalParticipants}</p>
-                    <p className="text-sm text-gray-500">Участников</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-green-600">{formatMoney(stats.paidCost)}</p>
-                    <p className="text-sm text-gray-500">Оплачено</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <XCircle className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-orange-600">{formatMoney(stats.unpaidCost)}</p>
-                    <p className="text-sm text-gray-500">Не оплачено</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="col-span-2">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Utensils className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-blue-600">{formatMoney(stats.totalCost)}</p>
-                    <p className="text-sm text-gray-500">Итого ({stats.totalPortions} порций)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 text-sm bg-gray-50 rounded-lg px-2.5 py-1.5">
+              <Trophy className="h-3.5 w-3.5 text-yellow-500" />
+              <span className="font-semibold">{stats.totalTeams}</span>
+              <span className="text-gray-500">команд</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm bg-gray-50 rounded-lg px-2.5 py-1.5">
+              <Users className="h-3.5 w-3.5 text-purple-500" />
+              <span className="font-semibold">{stats.totalParticipants}</span>
+              <span className="text-gray-500">участ.</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm bg-green-50 rounded-lg px-2.5 py-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+              <span className="font-semibold text-green-600">{formatMoney(stats.paidCost)}</span>
+              <span className="text-gray-500">оплач.</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm bg-orange-50 rounded-lg px-2.5 py-1.5">
+              <XCircle className="h-3.5 w-3.5 text-orange-500" />
+              <span className="font-semibold text-orange-600">{formatMoney(stats.unpaidCost)}</span>
+              <span className="text-gray-500">не оплач.</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm bg-blue-50 rounded-lg px-2.5 py-1.5">
+              <Utensils className="h-3.5 w-3.5 text-blue-500" />
+              <span className="font-semibold text-blue-600">{formatMoney(stats.totalCost)}</span>
+              <span className="text-gray-500">итого ({stats.totalPortions} порц.)</span>
+            </div>
             {stats.mealCost > 0 && (
-              <Card className="col-span-2">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <CircleDollarSign className="h-5 w-5 text-gray-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-muted-foreground">{formatMoney(stats.mealCost)}</p>
-                      <p className="text-sm text-gray-500">За 1 питание</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-1.5 text-sm bg-gray-50 rounded-lg px-2.5 py-1.5">
+                <span className="text-xs font-semibold text-gray-400">₽</span>
+                <span className="font-semibold">{formatMoney(stats.mealCost)}</span>
+                <span className="text-gray-500">/ пит.</span>
+              </div>
             )}
           </div>
 
