@@ -383,7 +383,8 @@ export default function CompetitionTracker() {
           type="number"
           min={1}
           value={teamForm.participantCount}
-          onChange={e => setTeamForm({ ...teamForm, participantCount: parseInt(e.target.value) || 1 })}
+          onChange={e => setTeamForm({ ...teamForm, participantCount: e.target.value === '' ? '' as any : parseInt(e.target.value) || 1 })}
+          onBlur={() => setTeamForm({ ...teamForm, participantCount: teamForm.participantCount || 1 })}
         />
       </div>
 
@@ -401,7 +402,8 @@ export default function CompetitionTracker() {
           type="number"
           min={1}
           value={teamForm.mealDays}
-          onChange={e => setTeamForm({ ...teamForm, mealDays: parseInt(e.target.value) || 1 })}
+          onChange={e => setTeamForm({ ...teamForm, mealDays: e.target.value === '' ? '' as any : parseInt(e.target.value) || 1 })}
+          onBlur={() => setTeamForm({ ...teamForm, mealDays: teamForm.mealDays || 1 })}
         />
       </div>
 
