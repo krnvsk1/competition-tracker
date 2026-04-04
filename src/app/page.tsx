@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -103,8 +103,12 @@ export default function CompetitionTracker() {
     notes: ''
   })
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
+  const selectedCompetitionRef = useRef<Competition | null>(null)
 
   // Загрузка соревнований
+  // Синхронизируем ref со state
+  useEffect(() => { selectedCompetitionRef.current = selectedCompetition }, [selectedCompetition])
+
   const loadCompetitions = useCallback(async () => {
     try {
       setLoading(true)
@@ -112,6 +116,12 @@ export default function CompetitionTracker() {
       const data = await res.json()
       if (Array.isArray(data)) {
         setCompetitions(data)
+        // Обновляем selectedCompetition свежими данными через ref
+        const current = selectedCompetitionRef.current
+        if (current) {
+          const updated = data.find((c: Competition) => c.id === current.id)
+          if (updated) setSelectedCompetition(updated)
+        }
       } else {
         console.error('API returned non-array:', data)
         setCompetitions([])
@@ -242,10 +252,19 @@ export default function CompetitionTracker() {
 
       if (res.ok) {
         toast.success('Удалено')
-        if (deleteTarget.type === 'competition') {
+        if (deleteTarget.type === 'team' && selectedCompetition) {
+          // Удаляем команду из выбранного соревнования без перезагрузки страницы
+          setSelectedCompetition({
+            ...selectedCompetition,
+            teams: selectedCompetition.teams.filter(t => t.id !== deleteTarget.id)
+          })
+          loadCompetitions()
+        } else if (deleteTarget.type === 'competition') {
           setSelectedCompetition(null)
+          loadCompetitions()
+        } else {
+          loadCompetitions()
         }
-        loadCompetitions()
       }
     } catch {
       toast.error('Ошибка при удалении')
