@@ -734,11 +734,11 @@ export default function CompetitionTracker() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
+              <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
                 {selectedCompetition.teams.map(team => (
                   <Card key={team.id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium truncate">{team.name}</h3>
@@ -950,7 +950,7 @@ export default function CompetitionTracker() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {competitions.map(competition => {
               const stats = getStats(competition)
               return (
@@ -959,8 +959,8 @@ export default function CompetitionTracker() {
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setSelectedCompetition(competition)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between mb-1">
                       <div>
                         <h3 className="font-semibold">{competition.name}</h3>
                         <p className="text-sm text-gray-500">{formatPeriod(competition.startDate, competition.endDate)}</p>
