@@ -27,7 +27,10 @@ export async function GET() {
     } catch {}
 
     if (!chatId) {
-      return NextResponse.json({ error: 'Chat ID не настроен' }, { status: 400 })
+      return NextResponse.json({
+        error: 'Chat ID не настроен',
+        hint: 'Откройте меню "Соревнования" → "Подключить Telegram" на сайте'
+      }, { status: 400 })
     }
 
     // Читаем данные
@@ -49,31 +52,39 @@ export async function GET() {
     }
 
     const jsonStr = JSON.stringify(backupData, null, 2)
+    const jsonBuffer = Buffer.from(jsonStr, 'utf-8')
 
     // Отправляем через Telegram Bot API как документ
     const filename = `competition-tracker-${new Date().toISOString().slice(0, 10)}.json`
     const boundary = '----FormBoundary' + Math.random().toString(36).slice(2)
+    const caption = `📦 Бэкап Competition Tracker\n📅 ${new Date().toLocaleDateString('ru-RU')}\n📋 ${competitions.length} соревн., ${teams.length} команд`
 
-    const body = [
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="chat_id"`,
-      '',
-      chatId,
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="caption"`,
-      '',
-      `📦 Бэкап Competition Tracker\n📅 ${new Date().toLocaleDateString('ru-RU')}\n📋 ${competitions.length} соревн., ${teams.length} команд`,
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="document"; filename="${filename}"`,
-      'Content-Type: application/json',
-      '',
-      jsonStr,
-      `--${boundary}--`
-    ].join('\r\n')
+    const parts: Buffer[] = []
+
+    function addField(name: string, value: string) {
+      parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`))
+    }
+
+    function addFile(name: string, fname: string, contentType: string, data: Buffer) {
+      const header = Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${name}"; filename="${fname}"\r\nContent-Type: ${contentType}\r\n\r\n`
+      )
+      const footer = Buffer.from(`\r\n--${boundary}--\r\n`)
+      parts.push(header, data, footer)
+    }
+
+    addField('chat_id', chatId)
+    addField('caption', caption)
+    addFile('document', filename, 'application/json', jsonBuffer)
+
+    const body = Buffer.concat(parts)
 
     const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
       method: 'POST',
-      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': String(body.length)
+      },
       body
     })
 
