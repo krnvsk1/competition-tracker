@@ -830,6 +830,16 @@ export default function CompetitionTracker() {
                                 WhatsApp
                               </Badge>
                             )}
+                            {team.hasTelegram && (
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                                Telegram
+                              </Badge>
+                            )}
+                            {team.hasMaxMessenger && (
+                              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                                MAX
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                             <span>{team.participantCount} чел. · {team.mealDays} дн. пит.</span>
@@ -871,21 +881,6 @@ export default function CompetitionTracker() {
                           </a>
                         </div>
                       )}
-
-                      <div className="flex gap-2 flex-wrap">
-                        {team.hasTelegram && (
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            Telegram
-                          </Badge>
-                        )}
-                        {team.hasMaxMessenger && (
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            MAX
-                          </Badge>
-                        )}
-                      </div>
                     </CardContent>
                   </Card>
                 ))}
