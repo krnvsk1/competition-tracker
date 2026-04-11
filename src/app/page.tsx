@@ -872,16 +872,10 @@ export default function CompetitionTracker() {
               </div>
             )}
             {selectedCompetition.organizerName && (
-              <div className={`flex items-center gap-1.5 text-sm rounded-lg px-2.5 py-1.5 ${selectedCompetition.organizerPhone ? 'bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-colors' : 'bg-gray-50'}`}
-                onClick={() => {
-                  if (selectedCompetition.organizerPhone) {
-                    window.open(`tel:${selectedCompetition.organizerPhone}`, '_self')
-                  }
-                }}
-              >
+              <div className="flex items-center gap-1.5 text-sm bg-gray-50 rounded-lg px-2.5 py-1.5">
                 <UserCircle className="h-3.5 w-3.5 text-indigo-500" />
                 <span className="font-semibold text-indigo-600 truncate max-w-[200px]">{selectedCompetition.organizerName}</span>
-                {selectedCompetition.organizerPhone && (
+                {isEditor && selectedCompetition.organizerPhone && (
                   <>
                     <Phone className="h-3.5 w-3.5 text-indigo-400" />
                     <span className="text-indigo-400 text-xs">{formatPhone(selectedCompetition.organizerPhone)}</span>
