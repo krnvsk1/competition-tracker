@@ -995,6 +995,7 @@ export default function CompetitionTracker() {
             )}
           </div>
         </div>
+      </div>
 
         {/* Диалог добавления команды */}
         <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
