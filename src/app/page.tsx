@@ -995,6 +995,7 @@ export default function CompetitionTracker() {
             )}
           </div>
         </div>
+        </div>
 
         {/* Диалог добавления команды */}
         <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
@@ -1089,7 +1090,6 @@ export default function CompetitionTracker() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
       </div>
     )
   }
