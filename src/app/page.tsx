@@ -848,7 +848,7 @@ export default function CompetitionTracker() {
           </div>
         </div>
 
-        {/* Команды — скролл */
+        {/* Команды — скролл */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 py-4">
             <div className="space-y-3">
@@ -995,7 +995,6 @@ export default function CompetitionTracker() {
             )}
           </div>
         </div>
-      </div>
 
         {/* Диалог добавления команды */}
         <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
@@ -1090,6 +1089,7 @@ export default function CompetitionTracker() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      </div>
       </div>
     )
   }
