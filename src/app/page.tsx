@@ -884,8 +884,8 @@ export default function CompetitionTracker() {
                                 По телефону
                               </Badge>
                             )}
-                            {team.hasWhatsApp && team.whatsAppLink && isEditor ? (
-                              (() => {
+                            {team.hasWhatsApp && (
+                              team.whatsAppLink && isEditor ? (() => {
                                 const digits = team.whatsAppLink.replace(/[^0-9]/g, '')
                                 const phone = digits.startsWith('8') ? '7' + digits.slice(1) : digits
                                 return (
@@ -895,14 +895,14 @@ export default function CompetitionTracker() {
                                     </Badge>
                                   </a>
                                 )
-                              })()
-                            ) : (
-                              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
-                                WhatsApp
-                              </Badge>
+                              })() : (
+                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                                  WhatsApp
+                                </Badge>
+                              )
                             )}
-                            {team.hasTelegram && team.telegramLink && isEditor ? (
-                              (() => {
+                            {team.hasTelegram && (
+                              team.telegramLink && isEditor ? (() => {
                                 const username = team.telegramLink.replace('@', '')
                                 return (
                                   <a href={`https://t.me/${username}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
@@ -911,14 +911,14 @@ export default function CompetitionTracker() {
                                     </Badge>
                                   </a>
                                 )
-                              })()
-                            ) : (
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                                Telegram
-                              </Badge>
+                              })() : (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                                  Telegram
+                                </Badge>
+                              )
                             )}
-                            {team.hasMaxMessenger && team.maxMessengerLink && isEditor ? (
-                              (() => {
+                            {team.hasMaxMessenger && (
+                              team.maxMessengerLink && isEditor ? (() => {
                                 const link = team.maxMessengerLink.startsWith('http')
                                   ? team.maxMessengerLink
                                   : `https://max.com/${team.maxMessengerLink}`
@@ -929,11 +929,11 @@ export default function CompetitionTracker() {
                                     </Badge>
                                   </a>
                                 )
-                              })()
-                            ) : (
-                              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                                MAX
-                              </Badge>
+                              })() : (
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                                  MAX
+                                </Badge>
+                              )
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
