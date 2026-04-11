@@ -46,9 +46,12 @@ interface Team {
   mealDays: number
   mealPaid: boolean
   hasTelegram: boolean
+  telegramLink: string
   hasMaxMessenger: boolean
+  maxMessengerLink: string
   hasPhoneContact: boolean
   hasWhatsApp: boolean
+  whatsAppLink: string
   notes: string
   createdAt: string
   updatedAt: string
@@ -111,9 +114,12 @@ export default function CompetitionTracker() {
     mealDays: 1,
     mealPaid: false,
     hasTelegram: false,
+    telegramLink: '',
     hasMaxMessenger: false,
+    maxMessengerLink: '',
     hasPhoneContact: false,
     hasWhatsApp: false,
+    whatsAppLink: '',
     notes: ''
   })
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -287,9 +293,12 @@ export default function CompetitionTracker() {
       mealDays: 1,
       mealPaid: false,
       hasTelegram: false,
+      telegramLink: '',
       hasMaxMessenger: false,
+      maxMessengerLink: '',
       hasPhoneContact: false,
       hasWhatsApp: false,
+      whatsAppLink: '',
       notes: ''
     })
     setEditingTeam(null)
@@ -458,9 +467,12 @@ export default function CompetitionTracker() {
       mealDays: team.mealDays,
       mealPaid: team.mealPaid,
       hasTelegram: team.hasTelegram,
+      telegramLink: team.telegramLink || '',
       hasMaxMessenger: team.hasMaxMessenger,
+      maxMessengerLink: team.maxMessengerLink || '',
       hasPhoneContact: team.hasPhoneContact,
       hasWhatsApp: team.hasWhatsApp,
+      whatsAppLink: team.whatsAppLink || '',
       notes: team.notes
     })
     setShowEditTeam(true)
@@ -579,34 +591,69 @@ export default function CompetitionTracker() {
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
-          <Switch
-            checked={teamForm.hasTelegram}
-            onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
-          />
-          <Label className="text-sm">Telegram</Label>
-        </div>
-        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
-          <Switch
-            checked={teamForm.hasMaxMessenger}
-            onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
-          />
-          <Label className="text-sm">MAX</Label>
-        </div>
-        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
-          <Switch
-            checked={teamForm.hasPhoneContact}
-            onCheckedChange={checked => setTeamForm({ ...teamForm, hasPhoneContact: checked })}
-          />
-          <Label className="text-sm">По телефону</Label>
-        </div>
-        <div className="flex items-center gap-2 h-10 rounded-md border px-3">
-          <Switch
-            checked={teamForm.hasWhatsApp}
-            onCheckedChange={checked => setTeamForm({ ...teamForm, hasWhatsApp: checked })}
-          />
-          <Label className="text-sm">WhatsApp</Label>
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Мессенджеры</Label>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 h-10 rounded-md border px-3">
+              <Switch
+                checked={teamForm.hasTelegram}
+                onCheckedChange={checked => setTeamForm({ ...teamForm, hasTelegram: checked })}
+              />
+              <Label className="text-sm">Telegram</Label>
+            </div>
+            {teamForm.hasTelegram && (
+              <Input
+                value={teamForm.telegramLink}
+                onChange={e => setTeamForm({ ...teamForm, telegramLink: e.target.value })}
+                placeholder="https://t.me/username"
+                className="ml-1"
+              />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 h-10 rounded-md border px-3">
+              <Switch
+                checked={teamForm.hasMaxMessenger}
+                onCheckedChange={checked => setTeamForm({ ...teamForm, hasMaxMessenger: checked })}
+              />
+              <Label className="text-sm">MAX</Label>
+            </div>
+            {teamForm.hasMaxMessenger && (
+              <Input
+                value={teamForm.maxMessengerLink}
+                onChange={e => setTeamForm({ ...teamForm, maxMessengerLink: e.target.value })}
+                placeholder="https://max.com/username"
+                className="ml-1"
+              />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 h-10 rounded-md border px-3">
+              <Switch
+                checked={teamForm.hasPhoneContact}
+                onCheckedChange={checked => setTeamForm({ ...teamForm, hasPhoneContact: checked })}
+              />
+              <Label className="text-sm">По телефону</Label>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 h-10 rounded-md border px-3">
+              <Switch
+                checked={teamForm.hasWhatsApp}
+                onCheckedChange={checked => setTeamForm({ ...teamForm, hasWhatsApp: checked })}
+              />
+              <Label className="text-sm">WhatsApp</Label>
+            </div>
+            {teamForm.hasWhatsApp && (
+              <Input
+                value={teamForm.whatsAppLink}
+                onChange={e => setTeamForm({ ...teamForm, whatsAppLink: e.target.value })}
+                placeholder="https://wa.me/79991234567"
+                className="ml-1"
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -837,19 +884,43 @@ export default function CompetitionTracker() {
                               </Badge>
                             )}
                             {team.hasWhatsApp && (
-                              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
-                                WhatsApp
-                              </Badge>
+                              team.whatsAppLink ? (
+                                <a href={team.whatsAppLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer">
+                                    WhatsApp
+                                  </Badge>
+                                </a>
+                              ) : (
+                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                                  WhatsApp
+                                </Badge>
+                              )
                             )}
                             {team.hasTelegram && (
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                                Telegram
-                              </Badge>
+                              team.telegramLink ? (
+                                <a href={team.telegramLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer">
+                                    Telegram
+                                  </Badge>
+                                </a>
+                              ) : (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                                  Telegram
+                                </Badge>
+                              )
                             )}
                             {team.hasMaxMessenger && (
-                              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                                MAX
-                              </Badge>
+                              team.maxMessengerLink ? (
+                                <a href={team.maxMessengerLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                  <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer">
+                                    MAX
+                                  </Badge>
+                                </a>
+                              ) : (
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                                  MAX
+                                </Badge>
+                              )
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
@@ -902,7 +973,7 @@ export default function CompetitionTracker() {
 
         {/* Диалог добавления команды */}
         <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Новая команда</DialogTitle>
             </DialogHeader>
@@ -918,7 +989,7 @@ export default function CompetitionTracker() {
 
         {/* Диалог редактирования команды */}
         <Dialog open={showEditTeam} onOpenChange={setShowEditTeam}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Редактировать команду</DialogTitle>
             </DialogHeader>

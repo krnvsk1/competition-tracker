@@ -12,9 +12,12 @@ export interface Team {
   mealDays: number
   mealPaid: boolean
   hasTelegram: boolean
+  telegramLink: string
   hasMaxMessenger: boolean
+  maxMessengerLink: string
   hasPhoneContact: boolean
   hasWhatsApp: boolean
+  whatsAppLink: string
   notes: string
   createdAt: string
   updatedAt: string
@@ -194,9 +197,12 @@ export function createTeam(data: {
   mealDays: number
   mealPaid: boolean
   hasTelegram: boolean
+  telegramLink: string
   hasMaxMessenger: boolean
+  maxMessengerLink: string
   hasPhoneContact: boolean
   hasWhatsApp: boolean
+  whatsAppLink: string
   notes: string
   competitionId: string
 }): Team {
@@ -212,9 +218,12 @@ export function createTeam(data: {
     mealDays: data.mealDays || 1,
     mealPaid: data.mealPaid || false,
     hasTelegram: data.hasTelegram || false,
+    telegramLink: data.telegramLink || '',
     hasMaxMessenger: data.hasMaxMessenger || false,
+    maxMessengerLink: data.maxMessengerLink || '',
     hasPhoneContact: data.hasPhoneContact || false,
     hasWhatsApp: data.hasWhatsApp || false,
+    whatsAppLink: data.whatsAppLink || '',
     notes: data.notes || '',
     createdAt: now,
     updatedAt: now,
@@ -236,9 +245,12 @@ export function updateTeam(
     mealDays?: number
     mealPaid?: boolean
     hasTelegram?: boolean
+    telegramLink?: string
     hasMaxMessenger?: boolean
+    maxMessengerLink?: string
     hasPhoneContact?: boolean
     hasWhatsApp?: boolean
+    whatsAppLink?: string
     notes?: string
   }
 ): Team | null {

@@ -29,9 +29,12 @@ export async function POST(request: NextRequest) {
       mealDays,
       mealPaid,
       hasTelegram,
+      telegramLink,
       hasMaxMessenger,
+      maxMessengerLink,
       hasPhoneContact,
       hasWhatsApp,
+      whatsAppLink,
       notes,
       competitionId
     } = body
@@ -48,9 +51,12 @@ export async function POST(request: NextRequest) {
       mealDays,
       mealPaid,
       hasTelegram,
+      telegramLink,
       hasMaxMessenger,
+      maxMessengerLink,
       hasPhoneContact,
       hasWhatsApp,
+      whatsAppLink,
       notes,
       competitionId
     })

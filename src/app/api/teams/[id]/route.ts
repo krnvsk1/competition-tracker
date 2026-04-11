@@ -39,9 +39,12 @@ export async function PUT(
       mealDays,
       mealPaid,
       hasTelegram,
+      telegramLink,
       hasMaxMessenger,
+      maxMessengerLink,
       hasPhoneContact,
       hasWhatsApp,
+      whatsAppLink,
       notes
     } = body
 
@@ -53,9 +56,12 @@ export async function PUT(
       mealDays,
       mealPaid,
       hasTelegram,
+      telegramLink,
       hasMaxMessenger,
+      maxMessengerLink,
       hasPhoneContact,
       hasWhatsApp,
+      whatsAppLink,
       notes
     })
 
