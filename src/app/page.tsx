@@ -1075,41 +1075,6 @@ export default function CompetitionTracker() {
           </DialogContent>
         </Dialog>
 
-        {/* PIN диалог */}
-        <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
-          <DialogContent className="sm:max-w-xs">
-            <DialogHeader>
-              <DialogTitle>Выберите режим</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <p className="text-sm text-gray-500 text-center">
-                Введите PIN для редактирования или закройте для просмотра
-              </p>
-              <div className="space-y-2">
-                <Label className="text-center block">PIN-код</Label>
-                <Input
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={pinInput}
-                  onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(false) }}
-                  onKeyDown={e => e.key === 'Enter' && submitPin()}
-                  placeholder="••••"
-                  className={`text-center text-2xl tracking-[0.5em] ${pinError ? 'border-red-500 ring-red-500' : ''}`}
-                  autoFocus
-                />
-                {pinError && (
-                  <p className="text-sm text-red-500 text-center">Неверный PIN-код</p>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowPinDialog(false)}>Просмотр</Button>
-              <Button onClick={submitPin}>Войти</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
         {/* Удаление */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
@@ -1288,6 +1253,41 @@ export default function CompetitionTracker() {
           {renderCompFormFields(createCompetition, 'Создать')}
         </DialogContent>
       </Dialog>
+
+      {/* PIN диалог */}
+      <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
+          <DialogContent className="sm:max-w-xs">
+            <DialogHeader>
+              <DialogTitle>Выберите режим</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-gray-500 text-center">
+                Введите PIN для редактирования или закройте для просмотра
+              </p>
+              <div className="space-y-2">
+                <Label className="text-center block">PIN-код</Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(false) }}
+                  onKeyDown={e => e.key === 'Enter' && submitPin()}
+                  placeholder="••••"
+                  className={`text-center text-2xl tracking-[0.5em] ${pinError ? 'border-red-500 ring-red-500' : ''}`}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-sm text-red-500 text-center">Неверный PIN-код</p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPinDialog(false)}>Просмотр</Button>
+              <Button onClick={submitPin}>Войти</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }
