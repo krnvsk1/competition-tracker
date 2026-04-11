@@ -980,6 +980,9 @@ export default function CompetitionTracker() {
                           )}
                         </div>
                       )}
+                      {team.notes && (
+                        <p className="text-sm text-gray-500 mt-1.5 whitespace-pre-wrap">{team.notes}</p>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
