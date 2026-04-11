@@ -971,9 +971,13 @@ export default function CompetitionTracker() {
                       {team.phoneNumber && (
                         <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
                           <Phone className="h-4 w-4" />
-                          <a href={`tel:${team.phoneNumber}`} className="hover:underline">
-                            {formatPhone(team.phoneNumber)}
-                          </a>
+                          {isEditor ? (
+                            <a href={`tel:${team.phoneNumber}`} className="hover:underline" onClick={e => e.stopPropagation()}>
+                              {formatPhone(team.phoneNumber)}
+                            </a>
+                          ) : (
+                            <span>{formatPhone(team.phoneNumber)}</span>
+                          )}
                         </div>
                       )}
                     </CardContent>
