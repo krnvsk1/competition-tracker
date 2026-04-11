@@ -894,7 +894,7 @@ export default function CompetitionTracker() {
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Команды</h2>
               {isEditor && (
-              <Button size="sm" onClick={() => setShowAddTeam(true)}>
+              <Button size="sm" onClick={() => { resetTeamForm(); setShowAddTeam(true); }}>
                 <Plus className="h-4 w-4 mr-1" />
                 Добавить
               </Button>
