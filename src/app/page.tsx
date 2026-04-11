@@ -1176,7 +1176,7 @@ export default function CompetitionTracker() {
                 ✏️ Редактор
               </Badge>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => { openPinDialog(); setTimeout(() => { const input = document.querySelector<HTMLInputElement>('input[type="password"][inputmode="numeric"]'); input?.focus(); }, 100); }}>
+              <Button variant="outline" size="sm" onClick={openPinDialog}>
                 🔑 Войти
               </Button>
             )}
