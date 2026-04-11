@@ -605,8 +605,8 @@ export default function CompetitionTracker() {
             {teamForm.hasTelegram && (
               <Input
                 value={teamForm.telegramLink}
-                onChange={e => setTeamForm({ ...teamForm, telegramLink: e.target.value })}
-                placeholder="https://t.me/username"
+                onChange={e => setTeamForm({ ...teamForm, telegramLink: e.target.value.replace('@', '') })}
+                placeholder="@username"
                 className="ml-1"
               />
             )}
@@ -623,7 +623,7 @@ export default function CompetitionTracker() {
               <Input
                 value={teamForm.maxMessengerLink}
                 onChange={e => setTeamForm({ ...teamForm, maxMessengerLink: e.target.value })}
-                placeholder="https://max.com/username"
+                placeholder="id или ссылка"
                 className="ml-1"
               />
             )}
@@ -648,9 +648,10 @@ export default function CompetitionTracker() {
             {teamForm.hasWhatsApp && (
               <Input
                 value={teamForm.whatsAppLink}
-                onChange={e => setTeamForm({ ...teamForm, whatsAppLink: e.target.value })}
-                placeholder="https://wa.me/79991234567"
+                onChange={e => setTeamForm({ ...teamForm, whatsAppLink: e.target.value.replace(/[^0-9]/g, '') })}
+                placeholder="79991234567"
                 className="ml-1"
+                inputMode="numeric"
               />
             )}
           </div>
@@ -884,39 +885,51 @@ export default function CompetitionTracker() {
                               </Badge>
                             )}
                             {team.hasWhatsApp && (
-                              team.whatsAppLink ? (
-                                <a href={team.whatsAppLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer">
-                                    WhatsApp
-                                  </Badge>
-                                </a>
-                              ) : (
+                              team.whatsAppLink ? (() => {
+                                const digits = team.whatsAppLink.replace(/[^0-9]/g, '')
+                                const phone = digits.startsWith('8') ? '7' + digits.slice(1) : digits
+                                return (
+                                  <a href={`https://wa.me/${phone}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer">
+                                      WhatsApp
+                                    </Badge>
+                                  </a>
+                                )
+                              })() : (
                                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
                                   WhatsApp
                                 </Badge>
                               )
                             )}
                             {team.hasTelegram && (
-                              team.telegramLink ? (
-                                <a href={team.telegramLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer">
-                                    Telegram
-                                  </Badge>
-                                </a>
-                              ) : (
+                              team.telegramLink ? (() => {
+                                const username = team.telegramLink.replace('@', '')
+                                return (
+                                  <a href={`https://t.me/${username}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer">
+                                      Telegram
+                                    </Badge>
+                                  </a>
+                                )
+                              })() : (
                                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                                   Telegram
                                 </Badge>
                               )
                             )}
                             {team.hasMaxMessenger && (
-                              team.maxMessengerLink ? (
-                                <a href={team.maxMessengerLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                                  <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer">
-                                    MAX
-                                  </Badge>
-                                </a>
-                              ) : (
+                              team.maxMessengerLink ? (() => {
+                                const link = team.maxMessengerLink.startsWith('http')
+                                  ? team.maxMessengerLink
+                                  : `https://max.com/${team.maxMessengerLink}`
+                                return (
+                                  <a href={link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer">
+                                      MAX
+                                    </Badge>
+                                  </a>
+                                )
+                              })() : (
                                 <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                                   MAX
                                 </Badge>
