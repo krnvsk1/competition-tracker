@@ -759,9 +759,9 @@ export default function CompetitionTracker() {
     const stats = getStats(selectedCompetition)
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="h-screen flex flex-col bg-gray-50">
         {/* Header */}
-        <div className="bg-white border-b sticky top-0 z-10">
+        <div className="bg-white border-b shrink-0">
           <div className="max-w-2xl mx-auto px-4 py-3">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" onClick={() => setSelectedCompetition(null)}>
@@ -808,9 +808,10 @@ export default function CompetitionTracker() {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Статистика */}
-          <div className="flex flex-wrap gap-2">
+        {/* Статистика — статичная */}
+        <div className="bg-white border-b shrink-0">
+          <div className="max-w-2xl mx-auto px-4 py-3">
+            <div className="flex flex-wrap gap-2">
             <div className="flex items-center gap-1.5 text-sm bg-gray-50 rounded-lg px-2.5 py-1.5">
               <Trophy className="h-3.5 w-3.5 text-yellow-500" />
               <span className="font-semibold">{stats.totalTeams}</span>
@@ -843,10 +844,14 @@ export default function CompetitionTracker() {
                 <span className="text-gray-500">/ пит.</span>
               </div>
             )}
+            </div>
           </div>
+        </div>
 
-          {/* Команды */}
-          <div className="space-y-3">
+        {/* Команды — скролл */
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-4 py-4">
+            <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Команды</h2>
               {isEditor && (
@@ -866,7 +871,7 @@ export default function CompetitionTracker() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
+              <div className="space-y-2">
                 {selectedCompetition.teams.map(team => (
                   <Card key={team.id} className={`overflow-hidden ${isEditor ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''}`} onClick={() => isEditor && openEditTeam(team)}>
                     <CardContent className="p-3">
