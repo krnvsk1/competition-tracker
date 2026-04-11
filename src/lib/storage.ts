@@ -30,6 +30,8 @@ export interface Competition {
   startDate: string
   endDate: string
   mealCost: number
+  organizerName: string
+  organizerPhone: string
   notes: string
   isArchived: boolean
   createdAt: string
@@ -100,6 +102,8 @@ export function createCompetition(data: {
   startDate: string
   endDate: string
   mealCost: number
+  organizerName: string
+  organizerPhone: string
   notes: string
 }): Competition {
   const competitions = readJSON<Competition>(COMPETITIONS_FILE)
@@ -111,6 +115,8 @@ export function createCompetition(data: {
     startDate: new Date(data.startDate).toISOString(),
     endDate: new Date(data.endDate).toISOString(),
     mealCost: data.mealCost || 0,
+    organizerName: data.organizerName || '',
+    organizerPhone: data.organizerPhone || '',
     notes: data.notes || '',
     isArchived: false,
     createdAt: now,
@@ -138,6 +144,8 @@ export function updateCompetition(
     startDate?: string
     endDate?: string
     mealCost?: number
+    organizerName?: string
+    organizerPhone?: string
     notes?: string
     isArchived?: boolean
   }
@@ -290,19 +298,19 @@ export function seedIfEmpty(): void {
   if (existing.length > 0) return
 
   const competitions: Competition[] = [
-    { id: 's1', name: 'Весенний паровоз', startDate: '2026-04-09T00:00:00.000Z', endDate: '2026-04-12T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: Усть-Лабинская «ФРС» 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's2', name: 'Турнир г. Воронеж', startDate: '2026-04-16T00:00:00.000Z', endDate: '2026-04-19T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Карповая секция Воронежской ФРС 8(950)755-43-33 Александр', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's3', name: 'ASV cup', startDate: '2026-04-29T00:00:00.000Z', endDate: '2026-05-03T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: 8(996) 247-57-19 Денис', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's4', name: 'Чемпионат г. Сочи', startDate: '2026-05-06T00:00:00.000Z', endDate: '2026-05-10T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Сочинская ФРС 8(999)654-52-32 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's5', name: 'Кубок Карпятников', startDate: '2026-05-13T00:00:00.000Z', endDate: '2026-05-17T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: 8(952) 869-24-81 Корсунов Дмитрий Сергеевич', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's6', name: 'Кубок КЛОНДАЙКА', startDate: '2026-06-04T00:00:00.000Z', endDate: '2026-06-07T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's7', name: 'Кубок главы МО Усть-Лабинский район (юноши)', startDate: '2026-06-11T00:00:00.000Z', endDate: '2026-06-14T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Усть-Лабинская ФРС 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's8', name: 'Соревнования МО Усть-Лабинский район «Кубок лета»', startDate: '2026-06-18T00:00:00.000Z', endDate: '2026-06-21T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Усть-Лабинская ФРС 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's9', name: 'Кубок юниоров', startDate: '2026-08-19T00:00:00.000Z', endDate: '2026-08-23T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: Адыгейская «ФРС» 8(918) 164-21-16 Юрий Михайлович', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's10', name: 'Карповая Лига Клондайка «Золотой Кубок памяти Яценко А.М»', startDate: '2026-09-02T00:00:00.000Z', endDate: '2026-09-06T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: Усть-Лабинская ФРС 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's11', name: 'Gentelmen CLUB', startDate: '2026-09-09T00:00:00.000Z', endDate: '2026-09-12T00:00:00.000Z', mealCost: 0, notes: 'коммерческий турнир\nОрганизатор: Gentelmen CLUB', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's12', name: 'Чемпионат Курской области по ловле карпа', startDate: '2026-09-30T00:00:00.000Z', endDate: '2026-10-03T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Курская ФРС 8(910) 279-64-44 Евгений', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
-    { id: 's13', name: 'Соревнования МО Усть-Лабинский район «Кубанская осень»', startDate: '2026-11-05T00:00:00.000Z', endDate: '2026-11-08T00:00:00.000Z', mealCost: 0, notes: 'рейтинг\nОрганизатор: Усть-Лабинская ФРС 8(918) 440-77-08 Алексей', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's1', name: 'Весенний паровоз', startDate: '2026-04-09T00:00:00.000Z', endDate: '2026-04-12T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская «ФРС» — Алексей', organizerPhone: '89184407708', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's2', name: 'Турнир г. Воронеж', startDate: '2026-04-16T00:00:00.000Z', endDate: '2026-04-19T00:00:00.000Z', mealCost: 0, organizerName: 'Карповая секция Воронежской ФРС — Александр', organizerPhone: '89507554333', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's3', name: 'ASV cup', startDate: '2026-04-29T00:00:00.000Z', endDate: '2026-05-03T00:00:00.000Z', mealCost: 0, organizerName: 'Денис', organizerPhone: '89962475719', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's4', name: 'Чемпионат г. Сочи', startDate: '2026-05-06T00:00:00.000Z', endDate: '2026-05-10T00:00:00.000Z', mealCost: 0, organizerName: 'Сочинская ФРС — Алексей', organizerPhone: '89996545232', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's5', name: 'Кубок Карпятников', startDate: '2026-05-13T00:00:00.000Z', endDate: '2026-05-17T00:00:00.000Z', mealCost: 0, organizerName: 'Корсунов Дмитрий Сергеевич', organizerPhone: '89528692481', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's6', name: 'Кубок КЛОНДАЙКА', startDate: '2026-06-04T00:00:00.000Z', endDate: '2026-06-07T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская ФРС — Алексей', organizerPhone: '89184407708', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's7', name: 'Кубок главы МО Усть-Лабинский район (юноши)', startDate: '2026-06-11T00:00:00.000Z', endDate: '2026-06-14T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская ФРС — Алексей', organizerPhone: '89184407708', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's8', name: 'Соревнования МО Усть-Лабинский район «Кубок лета»', startDate: '2026-06-18T00:00:00.000Z', endDate: '2026-06-21T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская ФРС — Алексей', organizerPhone: '89184407708', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's9', name: 'Кубок юниоров', startDate: '2026-08-19T00:00:00.000Z', endDate: '2026-08-23T00:00:00.000Z', mealCost: 0, organizerName: 'Адыгейская «ФРС» — Юрий Михайлович', organizerPhone: '89181642116', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's10', name: 'Карповая Лига Клондайка «Золотой Кубок памяти Яценко А.М»', startDate: '2026-09-02T00:00:00.000Z', endDate: '2026-09-06T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская ФРС — Алексей', organizerPhone: '89184407708', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's11', name: 'Gentelmen CLUB', startDate: '2026-09-09T00:00:00.000Z', endDate: '2026-09-12T00:00:00.000Z', mealCost: 0, organizerName: 'Gentelmen CLUB', organizerPhone: '', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's12', name: 'Чемпионат Курской области по ловле карпа', startDate: '2026-09-30T00:00:00.000Z', endDate: '2026-10-03T00:00:00.000Z', mealCost: 0, organizerName: 'Курская ФРС — Евгений', organizerPhone: '89102796444', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's13', name: 'Соревнования МО Усть-Лабинский район «Кубанская осень»', startDate: '2026-11-05T00:00:00.000Z', endDate: '2026-11-08T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская ФРС — Алексей', organizerPhone: '89184407708', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
   ]
 
   writeJSON(COMPETITIONS_FILE, competitions)

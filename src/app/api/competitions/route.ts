@@ -23,13 +23,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, startDate, endDate, mealCost, notes } = body
+    const { name, startDate, endDate, mealCost, organizerName, organizerPhone, notes } = body
 
     if (!name || !startDate || !endDate) {
       return NextResponse.json({ error: 'Название и период обязательны' }, { status: 400 })
     }
 
-    const competition = createCompetition({ name, startDate, endDate, mealCost, notes })
+    const competition = createCompetition({ name, startDate, endDate, mealCost, organizerName, organizerPhone, notes })
     return NextResponse.json(competition, { status: 201 })
   } catch (error) {
     console.error('Error creating competition:', error)

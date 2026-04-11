@@ -27,7 +27,7 @@ import {
   ChevronLeft,
   CheckCircle,
   XCircle,
-  MessageCircle,
+  UserCircle,
   Utensils,
   CircleDollarSign,
   Download,
@@ -64,6 +64,8 @@ interface Competition {
   startDate: string
   endDate: string
   mealCost: number
+  organizerName: string
+  organizerPhone: string
   notes: string
   isArchived: boolean
   createdAt: string
@@ -102,6 +104,8 @@ export default function CompetitionTracker() {
     startDate: new Date(),
     endDate: new Date(),
     mealCost: 0,
+    organizerName: '',
+    organizerPhone: '',
     notes: ''
   })
 
@@ -279,6 +283,8 @@ export default function CompetitionTracker() {
       startDate: new Date(),
       endDate: new Date(),
       mealCost: 0,
+      organizerName: '',
+      organizerPhone: '',
       notes: ''
     })
   }
@@ -485,6 +491,8 @@ export default function CompetitionTracker() {
       startDate: new Date(competition.startDate),
       endDate: new Date(competition.endDate),
       mealCost: competition.mealCost,
+      organizerName: competition.organizerName || '',
+      organizerPhone: competition.organizerPhone || '',
       notes: competition.notes
     })
     setShowEditCompetition(true)
@@ -736,6 +744,25 @@ export default function CompetitionTracker() {
         </div>
 
         <div className="space-y-2">
+          <Label>Организатор</Label>
+          <Input
+            value={compForm.organizerName}
+            onChange={e => setCompForm({ ...compForm, organizerName: e.target.value })}
+            placeholder="Имя организатора / секция"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Телефон организатора</Label>
+          <Input
+            value={compForm.organizerPhone}
+            onChange={e => setCompForm({ ...compForm, organizerPhone: e.target.value })}
+            placeholder="8 (999) 123-45-67"
+            type="tel"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label>Заметки</Label>
           <Textarea
             value={compForm.notes}
@@ -759,7 +786,7 @@ export default function CompetitionTracker() {
     const stats = getStats(selectedCompetition)
 
     return (
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-[100dvh] flex flex-col bg-gray-50 overflow-hidden">
         {/* Header */}
         <div className="bg-white border-b shrink-0">
           <div className="max-w-2xl mx-auto px-4 py-3">
@@ -842,6 +869,24 @@ export default function CompetitionTracker() {
                 <span className="text-xs font-semibold text-gray-400">₽</span>
                 <span className="font-semibold">{formatMoney(stats.mealCost)}</span>
                 <span className="text-gray-500">/ пит.</span>
+              </div>
+            )}
+            {selectedCompetition.organizerName && (
+              <div className={`flex items-center gap-1.5 text-sm rounded-lg px-2.5 py-1.5 ${selectedCompetition.organizerPhone ? 'bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-colors' : 'bg-gray-50'}`}
+                onClick={() => {
+                  if (selectedCompetition.organizerPhone) {
+                    window.open(`tel:${selectedCompetition.organizerPhone}`, '_self')
+                  }
+                }}
+              >
+                <UserCircle className="h-3.5 w-3.5 text-indigo-500" />
+                <span className="font-semibold text-indigo-600 truncate max-w-[200px]">{selectedCompetition.organizerName}</span>
+                {selectedCompetition.organizerPhone && (
+                  <>
+                    <Phone className="h-3.5 w-3.5 text-indigo-400" />
+                    <span className="text-indigo-400 text-xs">{formatPhone(selectedCompetition.organizerPhone)}</span>
+                  </>
+                )}
               </div>
             )}
             </div>
@@ -1226,6 +1271,12 @@ export default function CompetitionTracker() {
                       {stats.unpaidCost > 0 && (
                         <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
                           {formatMoney(stats.unpaidCost)}
+                        </Badge>
+                      )}
+                      {competition.organizerName && (
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-600 border-indigo-200">
+                          <UserCircle className="h-3 w-3 mr-1" />
+                          {competition.organizerName}
                         </Badge>
                       )}
                     </div>
