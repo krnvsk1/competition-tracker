@@ -182,6 +182,30 @@ export function deleteCompetition(id: string): boolean {
   return true
 }
 
+// --- Auto-archive expired competitions ---
+
+export function autoArchiveExpiredCompetitions(): number {
+  const competitions = readJSON<Competition>(COMPETITIONS_FILE)
+  const now = new Date()
+  // End of today — competition is expired if its endDate is before tomorrow
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  let archivedCount = 0
+
+  const updated = competitions.map(c => {
+    if (!c.isArchived && new Date(c.endDate) < todayEnd) {
+      archivedCount++
+      return { ...c, isArchived: true, updatedAt: now.toISOString() }
+    }
+    return c
+  })
+
+  if (archivedCount > 0) {
+    writeJSON(COMPETITIONS_FILE, updated)
+  }
+
+  return archivedCount
+}
+
 // --- Team CRUD ---
 
 export function getTeams(competitionId?: string): Team[] {
@@ -298,7 +322,7 @@ export function seedIfEmpty(): void {
   if (existing.length > 0) return
 
   const competitions: Competition[] = [
-    { id: 's1', name: 'Весенний паровоз', startDate: '2026-04-09T00:00:00.000Z', endDate: '2026-04-12T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская «ФРС» — Алексей', organizerPhone: '89184407708', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
+    { id: 's1', name: 'Весенний паровоз', startDate: '2026-04-09T00:00:00.000Z', endDate: '2026-04-12T00:00:00.000Z', mealCost: 0, organizerName: 'Усть-Лабинская «ФРС» — Алексей', organizerPhone: '89184407708', notes: 'коммерческий турнир', isArchived: true, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
     { id: 's2', name: 'Турнир г. Воронеж', startDate: '2026-04-16T00:00:00.000Z', endDate: '2026-04-19T00:00:00.000Z', mealCost: 0, organizerName: 'Карповая секция Воронежской ФРС — Александр', organizerPhone: '89507554333', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
     { id: 's3', name: 'ASV cup', startDate: '2026-04-29T00:00:00.000Z', endDate: '2026-05-03T00:00:00.000Z', mealCost: 0, organizerName: 'Денис', organizerPhone: '89962475719', notes: 'коммерческий турнир', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },
     { id: 's4', name: 'Чемпионат г. Сочи', startDate: '2026-05-06T00:00:00.000Z', endDate: '2026-05-10T00:00:00.000Z', mealCost: 0, organizerName: 'Сочинская ФРС — Алексей', organizerPhone: '89996545232', notes: 'рейтинг', isArchived: false, createdAt: '2026-04-04T12:00:00.000Z', updatedAt: '2026-04-04T12:00:00.000Z', teams: [] },

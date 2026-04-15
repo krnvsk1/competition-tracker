@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCompetitions, createCompetition, seedIfEmpty } from '@/lib/storage'
+import { getCompetitions, createCompetition, seedIfEmpty, autoArchiveExpiredCompetitions } from '@/lib/storage'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     seedIfEmpty()
+    autoArchiveExpiredCompetitions()
 
     const { searchParams } = new URL(request.url)
     const archived = searchParams.get('archived') === 'true'
